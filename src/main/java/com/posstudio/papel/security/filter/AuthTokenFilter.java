@@ -27,37 +27,42 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain)
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
             throws ServletException, IOException {
 
         try {
-            String headerAuth = request.getHeader("Authorization");
 
-            if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
+            String token = null;
 
-                String token = headerAuth.substring(7);
-
-                if (jwtUtils.validateToken(token)) {
-
-                    String username = jwtUtils.getUsernameFromToken(token);
-
-                    if (username != null &&
-                            SecurityContextHolder.getContext().getAuthentication() == null) {
-
-                        var userDetails = userDetailsService.loadUserByUsername(username);
-
-                        var auth = new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities());
-
-                        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                        SecurityContextHolder.getContext().setAuthentication(auth);
+            if (request.getCookies() != null) {
+                for (Cookie cookie : request.getCookies()) {
+                    if ("token".equals(cookie.getName())) {
+                        token = cookie.getValue();
                     }
                 }
             }
+
+            if (token != null && jwtUtils.validateToken(token)) {
+
+                String username = jwtUtils.getUsernameFromToken(token);
+
+                if (username != null &&
+                        SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                    var userDetails = userDetailsService.loadUserByUsername(username);
+
+                    var auth = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities());
+
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            }
+
         } catch (Exception e) {
             log.error("Error al verificar el token", e);
         }
