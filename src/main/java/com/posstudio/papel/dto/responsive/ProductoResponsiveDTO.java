@@ -1,5 +1,14 @@
 package com.posstudio.papel.dto.responsive;
 
-public record ProductoResponsiveDTO() {
+import java.math.BigDecimal;
 
+public record ProductoResponsiveDTO(
+        Long id,
+        String nombre,
+        String codigoDeBarras,
+        BigDecimal precio,
+        Integer stock,
+        String categoria,
+        String ubicacion,
+        String unidadNegocio) {
 }
