@@ -27,7 +27,9 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public ProductoResponsiveDTO crearProducto(ProductoRequestDTO data) {
-        productoRepository.findByNombre(data.nombre()).orElseThrow(ProductoExistenteException::new);
+        if (productoRepository.findByNombre(data.nombre()).isPresent()) {
+            throw new ProductoExistenteException();
+        }
         Categoria categoria = categoriaService.findByNombre(data.nombre());
         Producto producto = Producto.builder()
                 .nombre(data.nombre())

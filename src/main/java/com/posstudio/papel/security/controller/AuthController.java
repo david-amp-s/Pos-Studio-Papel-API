@@ -28,8 +28,8 @@ public class AuthController {
     private final JwtUtils jwtUtils;
 
     @PostMapping("/login")
-    public LoginResponseDTO login( @RequestBody LoginRequestDTO request,
-                                   HttpServletResponse response) {
+    public LoginResponseDTO login(@RequestBody LoginRequestDTO request,
+            HttpServletResponse response) {
 
         try {
             var auth = authenticationManager.authenticate(
@@ -45,12 +45,13 @@ public class AuthController {
             ResponseCookie cookie = ResponseCookie.from("token", jwt)
                     .httpOnly(true)
                     .secure(false) // ⚠️ true en producción
-                    .path("/")     // 🔥 CLAVE
+                    .path("/") // 🔥 CLAVE
                     .maxAge(60 * 60 * 24) // 1 día
                     .sameSite("Strict")
                     .build();
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-            return new LoginResponseDTO(usuarioAuth.getId(), usuarioAuth.getNombre(), usuarioAuth.getRol().name());
+            return new LoginResponseDTO(usuarioAuth.getId(), usuarioAuth.getNombre(), usuarioAuth.getRol().name(),
+                    cookie.getValue());
         } catch (Exception e) {
             throw new CredencialesInvalidasException(e.toString());
         }

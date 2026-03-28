@@ -37,7 +37,7 @@ public class Producto {
     @Column(nullable = false, unique = true)
     private String nombre;
 
-    @Column(name = "codigo_de_barras", unique = true)
+    @Column(name = "codigo_barras", unique = true)
     private String codigoDeBarras;
     @Column(nullable = false)
     private BigDecimal precio;

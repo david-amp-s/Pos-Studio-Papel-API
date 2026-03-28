@@ -8,9 +8,11 @@ public interface CategoriaService {
 
     CategoriaResponsiveDTO crearCategoria(CategoriaResquestDTO data);
 
-    CategoriaResponsiveDTO editarCategoria(Long id, CategoriaResponsiveDTO data);
+    CategoriaResponsiveDTO editarCategoria(Long id, CategoriaResquestDTO data);
 
     void eliminarCategoria(Long id);
 
     Categoria findByNombre(String nombre);
+
+    Categoria findById(Long id);
 }

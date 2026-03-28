@@ -42,7 +42,7 @@ public class MovimientoInventario {
 
     @Column(nullable = false)
     private Integer cantidad;
-
+    @Column(name = "referencia_id")
     private Long referencia;
 
     private String descripcion;

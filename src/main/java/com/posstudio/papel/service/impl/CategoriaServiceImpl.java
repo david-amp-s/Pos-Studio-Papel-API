@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.posstudio.papel.dto.request.CategoriaResquestDTO;
 import com.posstudio.papel.dto.responsive.CategoriaResponsiveDTO;
+import com.posstudio.papel.exception.categoria.CategoriaExistenteException;
 import com.posstudio.papel.exception.categoria.CategoriaInexistenteException;
 import com.posstudio.papel.model.Categoria;
 import com.posstudio.papel.repository.CategoriaRepository;
@@ -22,13 +23,22 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     public CategoriaResponsiveDTO crearCategoria(CategoriaResquestDTO data) {
-        throw new UnsupportedOperationException("Unimplemented method 'editarCategoria'");
+        if (categoriaRepository.findByNombre(data.nombre()).isPresent()) {
+            throw new CategoriaExistenteException();
+        }
+        Categoria categoria = Categoria.builder()
+                .nombre(data.nombre())
+                .build();
+        categoriaRepository.save(categoria);
+        return conversorDto(categoria);
     }
 
     @Override
-    public CategoriaResponsiveDTO editarCategoria(Long id, CategoriaResponsiveDTO data) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'editarCategoria'");
+    public CategoriaResponsiveDTO editarCategoria(Long id, CategoriaResquestDTO data) {
+        Categoria categoria = findById(id);
+        categoria.setNombre(data.nombre());
+        categoriaRepository.save(categoria);
+        return conversorDto(categoria);
     }
 
     @Override
@@ -40,6 +50,11 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     public Categoria findByNombre(String nombre) {
         return categoriaRepository.findByNombre(nombre).orElseThrow(CategoriaInexistenteException::new);
+    }
+
+    @Override
+    public Categoria findById(Long id) {
+        return categoriaRepository.findById(id).orElseThrow();
     }
 
 }
