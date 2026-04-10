@@ -8,13 +8,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.HttpHeaders;
 
-import com.posstudio.papel.model.Usuario;
 import com.posstudio.papel.security.Exception.CredencialesInvalidasException;
 import com.posstudio.papel.security.dto.request.LoginRequestDTO;
 import com.posstudio.papel.security.dto.response.LoginResponseDTO;
+import com.posstudio.papel.security.model.Usuario;
 import com.posstudio.papel.security.utils.JwtUtils;
 
 import lombok.RequiredArgsConstructor;

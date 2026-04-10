@@ -1,0 +1,36 @@
+Inventario
+- categoria
+-ubicacion_producto
+-producto
+-movimiento_inventario
+-producto_pendiente
+
+
+reglas 
+ -  cualquier movimiento que se haga en producto tiene que quedar registrado en movimiento_inventario
+- Si un producto llega con unicamente con nombre y precio se registra en la tabla producto_pendiente
+
+
+servicios
+ 
+ categoria:
+- crear, editar,listar, findByNombre, findById
+
+ ubicacion_producto:
+- crear, editar,listar, findByNombre, findById
+
+ producto:
+- crear, editar,listar,desactivar,findByNombre, findById
+-Ajustar Stock(Importante)
+
+ producto_pendiente:
+-crear,ajuste,listar,findByNombre, findByid
+
+excepciones de negocio en inventario
+
+ producto:
+- stock no pude ser negativo, 409
+- unidad de negocio no puede ser negativo 409
+
+ producto_pendiente:
+- no puede tener datos vacios o nulos  para el ajuste de producto 400

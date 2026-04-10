@@ -5,7 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.posstudio.papel.repository.UsuarioRepository;
+import com.posstudio.papel.security.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 

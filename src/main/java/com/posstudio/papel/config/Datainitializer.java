@@ -5,9 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.posstudio.papel.enums.Roles;
-import com.posstudio.papel.model.Usuario;
-import com.posstudio.papel.repository.UsuarioRepository;
+import com.posstudio.papel.common.enums.Roles;
+import com.posstudio.papel.security.model.Usuario;
+import com.posstudio.papel.security.repository.UsuarioRepository;
 
 @Configuration
 public class Datainitializer {
