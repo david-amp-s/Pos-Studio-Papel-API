@@ -1,5 +1,6 @@
 package com.posstudio.papel.inventario.service;
 
+import com.posstudio.papel.common.enums.TipoMovimientoInventario;
 import com.posstudio.papel.inventario.dto.request.ProductoRequestDTO;
 import com.posstudio.papel.inventario.dto.responsive.ProductoResponsiveDTO;
 import com.posstudio.papel.inventario.model.Producto;
@@ -13,6 +14,8 @@ public interface ProductoService {
 
     ProductoResponsiveDTO editarProducto(Long id, ProductoRequestDTO data);
 
-    void eliminarProducto();
+    ProductoResponsiveDTO ajustarStock(TipoMovimientoInventario tipoMovimiento, Integer cantidad, Producto producto);
+
+    void desactivarProducto();
 
 }

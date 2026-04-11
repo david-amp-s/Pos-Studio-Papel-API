@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
+import com.posstudio.papel.common.utils.StringUtils;
 import com.posstudio.papel.inventario.dto.request.CategoriaResquestDTO;
 import com.posstudio.papel.inventario.dto.responsive.CategoriaResponsiveDTO;
 import com.posstudio.papel.inventario.model.Categoria;
@@ -29,7 +30,7 @@ public class CategoriaServiceImpl implements CategoriaService {
             throw new BusinessException("Categoria ya existe con ese nombre", 409);
         }
         Categoria categoria = Categoria.builder()
-                .nombre(data.nombre())
+                .nombre(StringUtils.normalize(data.nombre()))
                 .build();
         categoriaRepository.save(categoria);
         return conversorDto(categoria);
@@ -38,14 +39,14 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     public CategoriaResponsiveDTO editarCategoria(Long id, CategoriaResquestDTO data) {
         Categoria categoria = findById(id);
-        categoria.setNombre(data.nombre());
+        categoria.setNombre(StringUtils.normalize(data.nombre()));
         categoriaRepository.save(categoria);
         return conversorDto(categoria);
     }
 
     @Override
     public Categoria findByNombre(String nombre) {
-        return categoriaRepository.findByNombre(nombre)
+        return categoriaRepository.findByNombre(StringUtils.normalize(nombre))
                 .orElseThrow(() -> new ResourceNotFoundException("categoria", nombre));
     }
 

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
+import com.posstudio.papel.common.utils.StringUtils;
 import com.posstudio.papel.inventario.dto.request.UbicacionRequestDTO;
 import com.posstudio.papel.inventario.dto.responsive.UbicacionResponsiveDTO;
 import com.posstudio.papel.inventario.model.Ubicacion;
@@ -25,11 +26,11 @@ public class UbicacionServiceImpl implements UbicacionService {
 
     @Override
     public UbicacionResponsiveDTO crearUbicacion(UbicacionRequestDTO data) {
-        if (ubicacionRepository.findByCodigo(data.codigo()).isPresent()) {
-            throw new BusinessException("Ubicacion ya existe con ese nombre");
+        if (ubicacionRepository.findByCodigo(StringUtils.normalize(data.codigo())).isPresent()) {
+            throw new BusinessException("Ubicacion ya existe con ese nombre", 409);
         }
         Ubicacion ubicacion = Ubicacion.builder()
-                .codigo(data.codigo())
+                .codigo(StringUtils.normalize(data.codigo()))
                 .build();
         ubicacionRepository.save(ubicacion);
         return conversorDTO(ubicacion);
@@ -38,14 +39,14 @@ public class UbicacionServiceImpl implements UbicacionService {
     @Override
     public UbicacionResponsiveDTO editarUbicacion(Long id, UbicacionRequestDTO data) {
         Ubicacion ubicacion = findById(id);
-        ubicacion.setCodigo(data.codigo());
+        ubicacion.setCodigo(StringUtils.normalize(data.codigo()));
         ubicacionRepository.save(ubicacion);
         return conversorDTO(ubicacion);
     }
 
     @Override
     public Ubicacion findByCodigo(String codigo) {
-        return ubicacionRepository.findByCodigo(codigo)
+        return ubicacionRepository.findByCodigo(StringUtils.normalize(codigo))
                 .orElseThrow(() -> new ResourceNotFoundException("Codigo", codigo));
     }
 
