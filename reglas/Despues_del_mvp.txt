@@ -1,0 +1,7 @@
+
+Inventario :
+
+Añadir tabla pedido donde se organizara para centralizar los productos que deben de pedirse (Ya que aunque haya stock bajo no es 100% necesario pedirlo) y añadir productos nuevos a pedir,
+
+añadir tabla alerta_inventario cuando haya una ocurrencia en el inventario como puede ser venta mayor del stock, stock bajo o sin stock 
+

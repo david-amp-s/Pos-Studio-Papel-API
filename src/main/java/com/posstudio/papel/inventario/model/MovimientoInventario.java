@@ -2,6 +2,9 @@ package com.posstudio.papel.inventario.model;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.type.PostgreSQLEnumJdbcType;
+
 import com.posstudio.papel.common.enums.TipoMovimientoInventario;
 
 import jakarta.persistence.Column;
@@ -37,6 +40,7 @@ public class MovimientoInventario {
     private Producto producto;
 
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
     @Column(name = "tipo", nullable = false)
     private TipoMovimientoInventario tipoMovimientoInventario;
 

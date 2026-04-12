@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class UbicacionController {
     private final UbicacionService ubicacionService;
 
-    @PostMapping("")
+    @PostMapping
     public ResponseEntity<ApiResponse<UbicacionResponsiveDTO>> crearUbicacion(
             @Valid @RequestBody UbicacionRequestDTO data) {
 
@@ -41,7 +41,7 @@ public class UbicacionController {
         return ResponseEntity.ok(ApiResponse.ok(ubicacionService.editarUbicacion(id, data)));
     }
 
-    @GetMapping("")
+    @GetMapping
     public ResponseEntity<ApiResponse<List<UbicacionResponsiveDTO>>> listarUbicaciones() {
         return ResponseEntity.ok(ApiResponse.ok(ubicacionService.listarUbicaciones()));
     }

@@ -3,6 +3,9 @@ package com.posstudio.papel.inventario.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.type.PostgreSQLEnumJdbcType;
+
 import com.posstudio.papel.common.enums.UnidadNegocio;
 
 import jakarta.persistence.Column;
@@ -51,6 +54,7 @@ public class Producto {
     @JoinColumn(name = "ubicacion_id")
     private Ubicacion ubicacion;
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
     @Column(name = "unidad_negocio", nullable = false)
     private UnidadNegocio unidadNegocio;
 

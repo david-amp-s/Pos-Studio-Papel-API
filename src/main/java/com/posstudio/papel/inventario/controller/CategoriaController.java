@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class CategoriaController {
     private final CategoriaService categoriaService;
 
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<ApiResponse<CategoriaResponsiveDTO>> crearCategoria(
             @Valid @RequestBody CategoriaResquestDTO data) {
         return ResponseEntity.ok(ApiResponse.ok(categoriaService.crearCategoria(data)));
@@ -40,7 +40,7 @@ public class CategoriaController {
         return ResponseEntity.ok(ApiResponse.ok(categoriaService.editarCategoria(id, data)));
     }
 
-    @GetMapping("")
+    @GetMapping
     public ResponseEntity<ApiResponse<List<CategoriaResponsiveDTO>>> listaCategoria() {
         return ResponseEntity.ok(ApiResponse.ok(categoriaService.listaCategoria()));
     }

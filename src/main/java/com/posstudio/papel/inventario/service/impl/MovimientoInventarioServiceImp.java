@@ -16,7 +16,14 @@ public class MovimientoInventarioServiceImp implements MovimientoInventarioServi
 
     @Override
     public void guardar(MovimientoInventarioRequestDTO movimiento) {
-        MovimientoInventario = MovimientoInventario.builder()
+        MovimientoInventario movimientoInventario = MovimientoInventario.builder()
+                .producto(movimiento.producto())
+                .tipoMovimientoInventario(movimiento.tipoMovimientoInventario())
+                .cantidad(movimiento.cantidad())
+                .referencia(movimiento.referencia())
+                .descripcion(movimiento.descripcion())
+                .build();
+        movimientoInventarioRepository.save(movimientoInventario);
     }
 
 }

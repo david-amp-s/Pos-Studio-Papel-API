@@ -12,6 +12,7 @@ CREATE TYPE unidad_negocio AS ENUM (
 'PAPELERIA',
 'VITRINA',
 'PIERCING'
+
 );
 
 CREATE TYPE metodo_pago AS ENUM (
@@ -30,7 +31,8 @@ CREATE TYPE tipo_movimiento_inventario AS ENUM (
 'COMPRA',
 'DEVOLUCION',
 'AJUSTE',
-'CONSUMO_INTERNO'
+'CONSUMO_INTERNO',
+'CREACION'
 );
 
 

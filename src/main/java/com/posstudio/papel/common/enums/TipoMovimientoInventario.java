@@ -4,5 +4,7 @@ public enum TipoMovimientoInventario {
     COMPRA,
     VENTA,
     DEVOLUCION,
+    CREACION,
+    CONSUMO_INTERNO,
     AJUSTE;
 }

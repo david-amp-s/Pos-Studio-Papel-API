@@ -1,5 +1,7 @@
 package com.posstudio.papel.inventario.service;
 
+import java.util.List;
+
 import com.posstudio.papel.common.enums.TipoMovimientoInventario;
 import com.posstudio.papel.inventario.dto.request.ProductoRequestDTO;
 import com.posstudio.papel.inventario.dto.responsive.ProductoResponsiveDTO;
@@ -10,12 +12,16 @@ public interface ProductoService {
 
     ProductoResponsiveDTO crearProducto(ProductoRequestDTO data);
 
-    ProductoResponsiveDTO listarProducto();
+    List<ProductoResponsiveDTO> listarProducto();
 
     ProductoResponsiveDTO editarProducto(Long id, ProductoRequestDTO data);
 
-    ProductoResponsiveDTO ajustarStock(TipoMovimientoInventario tipoMovimiento, Integer cantidad, Producto producto);
+    ProductoResponsiveDTO ajustarStock(TipoMovimientoInventario tipoMovimiento, Integer cantidad, Producto producto,
+            Long referencia);
 
-    void desactivarProducto();
+    Producto findByid(Long id);
 
+    void desactivarProducto(Long id);
+
+    void validarProductoNoExiste(String nombre);
 }
