@@ -40,10 +40,10 @@ public class ProductoServiceImpl implements ProductoService {
         validarProductoNoExiste(data.nombre());
         Categoria categoria = categoriaService.findByNombre(data.categoria());
         Ubicacion ubicacion = ubicacionService.findByCodigo(data.ubicacion());
-
+        String codigoDeBarras = verificarCodigoDeBarras(data.codigoDeBarras());
         Producto producto = Producto.builder()
                 .nombre(data.nombre())
-                .codigoDeBarras(data.codigoDeBarras())
+                .codigoDeBarras(codigoDeBarras)
                 .precio(data.precio())
                 .stock(0)
                 .categoria(categoria)
@@ -65,9 +65,9 @@ public class ProductoServiceImpl implements ProductoService {
         Producto producto = findByid(id);
         Categoria categoria = categoriaService.findByNombre(data.categoria());
         Ubicacion ubicacion = ubicacionService.findByCodigo(data.ubicacion());
-
+        String codigoDeBarras = verificarCodigoDeBarras(data.codigoDeBarras());
         producto.setNombre(data.nombre());
-        producto.setCodigoDeBarras(data.codigoDeBarras());
+        producto.setCodigoDeBarras(codigoDeBarras);
         producto.setPrecio(data.precio());
         producto.setCategoria(categoria);
         producto.setUbicacion(ubicacion);
@@ -164,5 +164,12 @@ public class ProductoServiceImpl implements ProductoService {
             throw new BusinessException("Producto ya existe con ese nombre", 409);
         }
 
+    }
+
+    private String verificarCodigoDeBarras(String codigoDeBarras) {
+        if (codigoDeBarras.isBlank()) {
+            return null;
+        }
+        return codigoDeBarras;
     }
 }
