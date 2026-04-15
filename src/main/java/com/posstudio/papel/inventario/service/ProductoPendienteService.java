@@ -15,4 +15,6 @@ public interface ProductoPendienteService {
     ProductoPendiente findById(Long id);
 
     List<ProductoPendienteResponsiveDTO> listarProductosPendientes();
+
+    Long totalProductosPendientes();
 }

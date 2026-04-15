@@ -59,4 +59,9 @@ public class ProductoPendienteServiceImpl implements ProductoPendienteService {
         return productoPendienteRepository.findAll().stream().map(this::conversorDTO).toList();
     }
 
+    @Override
+    public Long totalProductosPendientes() {
+        return productoPendienteRepository.count();
+    }
+
 }

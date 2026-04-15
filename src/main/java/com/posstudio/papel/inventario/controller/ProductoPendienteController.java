@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/productos_pendientes")
@@ -46,6 +47,11 @@ public class ProductoPendienteController {
     @GetMapping()
     public ResponseEntity<ApiResponse<List<ProductoPendienteResponsiveDTO>>> listarProductosPendientes() {
         return ResponseEntity.ok(ApiResponse.ok(productoPendienteService.listarProductosPendientes()));
+    }
+
+    @GetMapping("/total")
+    public ResponseEntity<ApiResponse<Long>> totalProductosPendientes() {
+        return ResponseEntity.ok(ApiResponse.ok(productoPendienteService.totalProductosPendientes()));
     }
 
 }
