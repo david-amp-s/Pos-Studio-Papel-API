@@ -1,0 +1,23 @@
+MVP
+
+auth(ya hecho)
+
+inventario(Ya hecho)
+  categoria
+  ubicacion_producto
+  producto
+  movimiento_inventario
+  producto_pendiente
+
+turnos()
+  empleado
+  turno
+  turno_empleado
+  comentario_turno
+
+ventas()
+  venta
+  detalle_venta
+  pago_venta
+  factura
+

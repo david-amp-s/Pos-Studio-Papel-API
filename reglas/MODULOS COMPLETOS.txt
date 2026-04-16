@@ -1,0 +1,54 @@
+modulos
+
+login (jwt +tocken)
+ usuario
+
+inventario ()
+ categoria
+ ubicacion_producto
+ producto
+ movimiento_inventario
+ producto_pendiente
+---------------------------------
+ solicitud_producto
+ alerta_inventario
+ pedido
+-------------------------------
+ 
+
+turnos()
+ empleado
+ turno
+ turno_empleado
+ comentario_turno
+
+ventas()
+ venta
+ pago_venta
+ detalle_venta
+ factura
+
+-----------------------------------
+prestamos()
+ cliente
+ deuda_cliente
+
+devoluciones()
+devolucion
+ detalle_devolucion
+
+compras()
+ proveedor
+ compra
+ detalle_compra
+
+auditoria()
+ auditoria
+---------------------------------
+
+
+
+
+
+
+
