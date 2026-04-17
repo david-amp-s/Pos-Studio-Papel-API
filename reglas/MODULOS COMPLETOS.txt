@@ -17,10 +17,14 @@ inventario ()
  
 
 turnos()
- empleado
+empleado 
  turno
  turno_empleado
- comentario_turno
+ registro_pago
+-----------------------------
+comentario_turno
+log_turno
+------------------------------
 
 ventas()
  venta

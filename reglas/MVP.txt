@@ -9,11 +9,12 @@ inventario(Ya hecho)
   movimiento_inventario
   producto_pendiente
 
+
 turnos()
-  empleado
-  turno
-  turno_empleado
-  comentario_turno
+ empleado 
+ turno
+ turno_empleado
+ registro_pago
 
 ventas()
   venta
