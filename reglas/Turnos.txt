@@ -1,0 +1,187 @@
+-- =========================
+-- ENUMS
+-- =========================
+
+CREATE TYPE tipo_turno AS ENUM ('MANANA', 'TARDE');
+CREATE TYPE estado_turno AS ENUM ('ABIERTO', 'CERRADO');
+
+CREATE TYPE tipo_comentario AS ENUM ('INFO', 'ALERTA', 'TAREA');
+
+CREATE TYPE tipo_log_turno AS ENUM ('DIFERENCIA_CAJA', 'AJUSTE', 'ERROR');
+
+CREATE TYPE tipo_pago AS ENUM ('MANANA', 'TARDE', 'NOCHE', 'COMPLETA');
+
+
+-- =========================
+-- TABLA EMPLEADO
+-- =========================
+
+CREATE TABLE empleado (
+    id BIGSERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- =========================
+-- TABLA TURNO
+-- =========================
+
+CREATE TABLE turno (
+    id BIGSERIAL PRIMARY KEY,
+    
+    fecha DATE NOT NULL,
+    tipo_turno tipo_turno NOT NULL,
+    estado estado_turno NOT NULL DEFAULT 'ABIERTO',
+    
+    dinero_apertura NUMERIC(12,2) NOT NULL DEFAULT 100000,
+    dinero_cierre NUMERIC(12,2),
+    diferencia NUMERIC(12,2),
+    
+    fecha_apertura TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_cierre TIMESTAMP,
+
+    CONSTRAINT unique_turno_por_dia UNIQUE (fecha, tipo_turno)
+);
+
+
+-- =========================
+-- TABLA TURNO_EMPLEADO
+-- =========================
+
+CREATE TABLE turno_empleado (
+    id BIGSERIAL PRIMARY KEY,
+    
+    turno_id BIGINT NOT NULL,
+    empleado_id BIGINT NOT NULL,
+    
+    hora_entrada TIMESTAMP,
+    hora_salida TIMESTAMP,
+    
+    presente BOOLEAN DEFAULT TRUE,
+
+    CONSTRAINT fk_turno_empleado_turno
+        FOREIGN KEY (turno_id)
+        REFERENCES turno(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_turno_empleado_empleado
+        FOREIGN KEY (empleado_id)
+        REFERENCES empleado(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT unique_turno_empleado
+        UNIQUE (turno_id, empleado_id)
+);
+
+
+-- =========================
+-- TABLA COMENTARIO_TURNO (SIN RELACIÓN A TURNO)
+-- =========================
+
+CREATE TABLE comentario_turno (
+    id BIGSERIAL PRIMARY KEY,
+    
+    mensaje TEXT NOT NULL,
+    tipo tipo_comentario NOT NULL DEFAULT 'INFO',
+    
+    creado_por BIGINT NOT NULL,
+    fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- =========================
+-- TABLA LOG_TURNO
+-- =========================
+
+CREATE TABLE log_turno (
+    id BIGSERIAL PRIMARY KEY,
+    
+    turno_id BIGINT NOT NULL,
+    
+    tipo tipo_log_turno NOT NULL,
+    descripcion TEXT,
+    monto_diferencia NUMERIC(12,2),
+    
+    creado_por BIGINT NOT NULL,
+    fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_log_turno
+        FOREIGN KEY (turno_id)
+        REFERENCES turno(id)
+        ON DELETE CASCADE
+);
+
+
+-- =========================
+-- TABLA REGISTRO_PAGO
+-- =========================
+
+CREATE TABLE registro_pago (
+    id BIGSERIAL PRIMARY KEY,
+    
+    turno_empleado_id BIGINT NOT NULL,
+    
+    tipo_pago tipo_pago NOT NULL,
+    monto NUMERIC(12,2) NOT NULL,
+    
+    registrado_por BIGINT NOT NULL,
+    fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_pago_turno_empleado
+        FOREIGN KEY (turno_empleado_id)
+        REFERENCES turno_empleado(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT unique_pago_por_turno_empleado
+        UNIQUE (turno_empleado_id)
+);
+
+
+-- =========================
+-- ÍNDICES Y REGLAS
+-- =========================
+
+-- Solo un turno abierto a la vez
+CREATE UNIQUE INDEX unico_turno_abierto
+ON turno (estado)
+WHERE estado = 'ABIERTO';
+
+-- Índices de rendimiento
+CREATE INDEX idx_turno_fecha ON turno(fecha);
+CREATE INDEX idx_turno_empleado_turno ON turno_empleado(turno_id);
+CREATE INDEX idx_turno_empleado_empleado ON turno_empleado(empleado_id);
+CREATE INDEX idx_pago_turno_empleado ON registro_pago(turno_empleado_id);
+
+A tener encuenta
+MVP
+turnos()
+empleado 
+ turno
+ turno_empleado
+ registro_pago
+log_turno
+
+añadir
+comentario_turno
+
+
+
+
+
+turno:
+-crear turno
+   apertura-cierre
+  
+-total dia
+reglas : no puede haber un turno abierto para poder abrir otro.
+si ya hubo un turno de la mañana en ese dia automaticamente se abre un turno en la tarde
+si hay diferencia enviar al log
+no puede haver un cierre sin empleados dentro de turno empleado
+
+turno empleado:
+-revisa que el turno este abiero para crearce, agregar empleados apenas se cierre el turno registra la hora de la salida 
+
+registro_pago
+-muestra todos los empleados del dia con el turno empleado y la hora de entrada para poder ingresar el pago
