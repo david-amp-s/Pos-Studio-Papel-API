@@ -51,7 +51,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         empleadoRepository.save(empleado);
     }
 
-    private Empleado findById(Long id) {
+    public  Empleado findById(Long id) {
         return empleadoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Empleado", id.toString()));
     }

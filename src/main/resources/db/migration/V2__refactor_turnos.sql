@@ -48,8 +48,6 @@ RENAME COLUMN hora_inicio TO hora_entrada;
 ALTER TABLE turno_empleado
 RENAME COLUMN hora_fin TO hora_salida;
 
-ALTER TABLE turno_empleado
-ADD COLUMN presente BOOLEAN DEFAULT TRUE;
 
 ALTER TABLE turno_empleado
 ADD CONSTRAINT unique_turno_empleado UNIQUE (turno_id, empleado_id);
