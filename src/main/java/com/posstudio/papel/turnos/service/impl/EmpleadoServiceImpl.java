@@ -25,6 +25,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
     @Override
     public EmpleadoResponsiveDTO crearEmpleado(EmpleadoRequestDTO data) {
+        // buscar que el empleado no exista
         if (empleadoRepository.findByNombre(data.nombre()).isPresent()) {
             throw new BusinessException("Empleado ya existe con ese nombre", 409);
         }
@@ -51,7 +52,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         empleadoRepository.save(empleado);
     }
 
-    public  Empleado findById(Long id) {
+    public Empleado findById(Long id) {
         return empleadoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Empleado", id.toString()));
     }

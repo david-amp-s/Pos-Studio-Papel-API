@@ -1,5 +1,6 @@
 package com.posstudio.papel.turnos.service.impl;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -10,11 +11,10 @@ import com.posstudio.papel.common.enums.TipoTurno;
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.turnos.dto.request.TurnoEmpleadoRequest;
-import com.posstudio.papel.turnos.dto.request.TurnoRequestDTO;
 import com.posstudio.papel.turnos.dto.responsive.TurnoResponsiveDTO;
 import com.posstudio.papel.turnos.model.Turno;
-import com.posstudio.papel.turnos.repository.TurnoEmpleadoRepository;
 import com.posstudio.papel.turnos.repository.TurnoRepository;
+import com.posstudio.papel.turnos.service.TurnoEmpleadoService;
 import com.posstudio.papel.turnos.service.TurnoService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,10 +23,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TurnoServiceImpl implements TurnoService {
     private final TurnoRepository turnoRepository;
-    private final TurnoEmpleadoRepository turnoEmpleadoRepository;
+    private final TurnoEmpleadoService turnoEmpleadoService;
+
+    private TurnoResponsiveDTO conversorDTO(Turno turno) {
+        return new TurnoResponsiveDTO(turno.getId(), turno.getFecha(), turno.getTipoTurno(), turno.getEstadoTurno(),
+                turno.getDineroApertura(),
+                turno.getDineroCierre(), turno.getDiferencia(), turno.getFechaApertura(), turno.getFechaCierre());
+    }
 
     @Override
     public TurnoResponsiveDTO crearTurno(TurnoEmpleadoRequest data) {
+        // buscar no haya turno abierto
         if (turnoRepository.findByEstadoTurno(EstadoTurno.ABIERTO).isPresent()) {
             throw new BusinessException("Ya hay un turno activo");
         }
@@ -37,13 +44,13 @@ public class TurnoServiceImpl implements TurnoService {
                 .fecha(fecha)
                 .tipoTurno(tipoTurno)
                 .estadoTurno(EstadoTurno.ABIERTO)
-                .dineroApertura(200000)
-                .dineroCierre(null)
-                .diferencia(null)
-                .fecha_apertura(fechaApertura)
-                .fecha_cierre()
+                .dineroApertura(BigDecimal.valueOf(
+                        200000))
+                .fechaApertura(fechaApertura)
                 .build();
-
+        turnoRepository.save(turno);
+        turnoEmpleadoService.crearTurnoEmpleado(data, turno.getId());
+        return conversorDTO(turno);
     }
 
     private TipoTurno verificacionHorario(LocalDate fecha) {
@@ -68,5 +75,41 @@ public class TurnoServiceImpl implements TurnoService {
     @Override
     public Turno buscarTurnoId(Long id) {
         return turnoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Turno", id.toString()));
+    }
+
+    @Override
+    public TurnoResponsiveDTO editarTurno(Long turnoId, TurnoEmpleadoRequest data) {
+        // validar que el accion turno no sea null
+        if (data.tipoAccionTurno() == null) {
+            throw new ResourceNotFoundException("La accion no puede ser null", null);
+        }
+
+        // buscar turno
+        Turno turno = buscarTurnoId(turnoId);
+
+        // hacer un listado de opciones:
+        switch (data.tipoAccionTurno()) {
+            // añadir empleados
+            case INGRESO:
+                turnoEmpleadoService.crearTurnoEmpleado(data, turnoId);
+                break;
+            // generar salida de empleado
+            case SALIDA:
+                turnoEmpleadoService.registrarSalidaEmpleado(data, turnoId);
+                break;
+            // eliminar registro empleado
+            case ELIMINAR:
+                turnoEmpleadoService.eliminarRegistroEmpleado(turnoId);
+                break;
+            default:
+                throw new BusinessException("Acción inválida");
+        }
+        return conversorDTO(turno);
+    }
+
+    @Override
+    public TurnoResponsiveDTO cerrarTurno(Long turnoId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'cerrarTurno'");
     }
 }
