@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.posstudio.papel.common.enums.EstadoTurno;
 import com.posstudio.papel.common.exception.BusinessException;
+import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.turnos.dto.request.TurnoEmpleadoRequest;
 import com.posstudio.papel.turnos.dto.responsive.TurnoEmpleadoResponsiveDTO;
 import com.posstudio.papel.turnos.model.Empleado;
@@ -25,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
-    private final TurnoService turnoService;
+
     private final EmpleadoService empleadoService;
     private final TurnoEmpleadoRepository turnoEmpleadoRepository;
 
@@ -35,15 +36,10 @@ public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
     }
 
     @Override
-    public List<TurnoEmpleadoResponsiveDTO> crearTurnoEmpleado(TurnoEmpleadoRequest data, Long turnoId) {
+    public List<TurnoEmpleadoResponsiveDTO> crearTurnoEmpleado(TurnoEmpleadoRequest data, Turno turno) {
 
-        // validar turno abierto
-        Turno turno = turnoService.buscarTurnoId(turnoId);
-        validarTurnoAbierto(turno);
-        // obtener a los empleados
-
-        List<Empleado> empleados = data.empleadoIds().stream()
-                .map(emp -> empleadoService.findById(emp)).toList();
+        // filtro turnoEmpleado
+        List<Empleado> empleados = filtroTurnoEmpleado(data);
 
         // verificar que los empleados no esten duplicados en el turno
         List<Long> empleadosExistentes = turnoEmpleadoRepository.findEmpleadoIdsByTurnoId(turno.getId());
@@ -52,12 +48,7 @@ public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
                 throw new BusinessException("El empleado con id " + empleado.getId() + " ya está en el turno");
             }
         }
-        // evitar duplicados en la solicitud
-        Set<Long> uniqueIds = new HashSet<>(data.empleadoIds());
 
-        if (uniqueIds.size() != data.empleadoIds().size()) {
-            throw new BusinessException("Hay IDs duplicados en la solicitud");
-        }
         // guardar en la base de datos
         List<TurnoEmpleado> turnoEmpleados = empleados.stream().map(emp -> TurnoEmpleado.builder()
                 .turno(turno)
@@ -71,39 +62,57 @@ public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
     }
 
     @Override
-    public List<TurnoEmpleadoResponsiveDTO> registrarSalidaEmpleado(TurnoEmpleadoRequest data, Long turnoId) {
-        // buscar turno
-        Turno turno = turnoService.buscarTurnoId(turnoId);
-        // validar turno activo
-        validarTurnoAbierto(turno);
-        // validar que no hayan ids repetidos
+    public List<TurnoEmpleadoResponsiveDTO> registrarSalidaEmpleado(TurnoEmpleadoRequest data, Turno turno) {
 
-        // buscar empleados
+        // filtro TurnoEmpleado
+        List<Empleado> empleados = filtroTurnoEmpleado(data);
         // validar que los empleados esten dentro del turno
+        List<Long> empleadosExistentes = turnoEmpleadoRepository.findEmpleadoIdsByTurnoId(turno.getId());
+        for (Empleado empleado : empleados) {
+            if (!empleadosExistentes.contains(empleado.getId())) {
+                throw new BusinessException(
+                        "El empleado con id " + empleado.getId() + " no está registrado en el turno");
+            }
+        }
         // registrar salida
+        List<Long> empleadoIds = empleados.stream().map(Empleado::getId).toList();
+        List<TurnoEmpleado> turnoEmpleados = turnoEmpleadoRepository
+                .findByTurnoIdAndEmpleadoIdIn(turno.getId(), empleadoIds);
+
+        turnoEmpleados.forEach(te -> te.setHoraSalida(LocalDateTime.now()));
         // guardarla
+        turnoEmpleadoRepository.saveAll(turnoEmpleados);
+
         // retornar mapeo
+        return turnoEmpleados.stream().map(this::conversorDTO).toList();
     }
 
-    private List<Empleado> filtroTurnoEmpleado(TurnoEmpleadoRequest data, Long turnoId) {
-        // buscar turno
-        Turno turno = turnoService.buscarTurnoId(turnoId);
-        // validar turno activo
-        if (turno.getEstadoTurno() != EstadoTurno.ABIERTO) {
-            throw new BusinessException("El turno debe de estar abierto para registrar empleados");
+    @Override
+    public void eliminarRegistroEmpleado(Turno turno, Long empleadoId) {
+        TurnoEmpleado turnoEmpleado = turnoEmpleadoRepository.findByTurnoIdAndEmpleadoId(turno.getId(), empleadoId)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Turno empleado no encontrado", empleadoId.toString()));
+
+        LocalDateTime limiteEdicion = LocalDateTime.now().minusHours(1);
+
+        if (turnoEmpleado.getHoraEntrada().isBefore(limiteEdicion)) {
+            throw new BusinessException("No se puede eliminar un registro con más de 1 hora de antigüedad");
         }
+
+        turnoEmpleadoRepository.delete(turnoEmpleado);
+    }
+
+    private List<Empleado> filtroTurnoEmpleado(TurnoEmpleadoRequest data) {
+
         // validar que no hayan ids repetidos
         Set<Long> validacionIds = new HashSet<>(data.empleadoIds());
+        if (validacionIds.size() != data.empleadoIds().size()) {
+            throw new BusinessException("La lista de empleados contiene IDs duplicados");
+        }
         // buscar empleados
         List<Empleado> empleados = validacionIds.stream().map(emp -> empleadoService.findById(emp)).toList();
         return empleados;
 
-    }
-
-    @Override
-    public void eliminarRegistroEmpleado(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'eliminarRegistroEmpleado'");
     }
 
 }

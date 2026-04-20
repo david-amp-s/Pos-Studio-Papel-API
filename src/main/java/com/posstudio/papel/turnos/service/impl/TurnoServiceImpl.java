@@ -49,7 +49,7 @@ public class TurnoServiceImpl implements TurnoService {
                 .fechaApertura(fechaApertura)
                 .build();
         turnoRepository.save(turno);
-        turnoEmpleadoService.crearTurnoEmpleado(data, turno.getId());
+        turnoEmpleadoService.crearTurnoEmpleado(data, turno);
         return conversorDTO(turno);
     }
 
@@ -83,23 +83,25 @@ public class TurnoServiceImpl implements TurnoService {
         if (data.tipoAccionTurno() == null) {
             throw new ResourceNotFoundException("La accion no puede ser null", null);
         }
-
-        // buscar turno
+        // buscar turno y validar
         Turno turno = buscarTurnoId(turnoId);
+        if (turno.getEstadoTurno() != EstadoTurno.ABIERTO) {
+            throw new BusinessException("El turno debe de estar abierto para registrar empleados");
+        }
 
         // hacer un listado de opciones:
         switch (data.tipoAccionTurno()) {
             // añadir empleados
             case INGRESO:
-                turnoEmpleadoService.crearTurnoEmpleado(data, turnoId);
+                turnoEmpleadoService.crearTurnoEmpleado(data, turno);
                 break;
             // generar salida de empleado
             case SALIDA:
-                turnoEmpleadoService.registrarSalidaEmpleado(data, turnoId);
+                turnoEmpleadoService.registrarSalidaEmpleado(data, turno);
                 break;
             // eliminar registro empleado
             case ELIMINAR:
-                turnoEmpleadoService.eliminarRegistroEmpleado(turnoId);
+                turnoEmpleadoService.eliminarRegistroEmpleado(turno, data.empleadoIds().getFirst());
                 break;
             default:
                 throw new BusinessException("Acción inválida");
