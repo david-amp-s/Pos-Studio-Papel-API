@@ -1,6 +1,5 @@
 package com.posstudio.papel.turnos.service.impl;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -8,7 +7,6 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import com.posstudio.papel.common.enums.EstadoTurno;
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.turnos.dto.request.TurnoEmpleadoRequest;
@@ -19,7 +17,6 @@ import com.posstudio.papel.turnos.model.TurnoEmpleado;
 import com.posstudio.papel.turnos.repository.TurnoEmpleadoRepository;
 import com.posstudio.papel.turnos.service.EmpleadoService;
 import com.posstudio.papel.turnos.service.TurnoEmpleadoService;
-import com.posstudio.papel.turnos.service.TurnoService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -74,6 +71,11 @@ public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
                         "El empleado con id " + empleado.getId() + " no está registrado en el turno");
             }
         }
+        // validar que el turno no quede solo
+
+        if (empleadosExistentes.size() - empleados.size() <= 0) {
+            throw new BusinessException("El turno no puede quedar sin empleados");
+        }
         // registrar salida
         List<Long> empleadoIds = empleados.stream().map(Empleado::getId).toList();
         List<TurnoEmpleado> turnoEmpleados = turnoEmpleadoRepository
@@ -113,6 +115,15 @@ public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
         List<Empleado> empleados = validacionIds.stream().map(emp -> empleadoService.findById(emp)).toList();
         return empleados;
 
+    }
+
+    @Override
+    public void registarCierreTurno(Turno turno) {
+        List<TurnoEmpleado> sinSalida = turnoEmpleadoRepository
+                .findByTurnoIdAndHoraSalidaIsNull(turno.getId());
+
+        sinSalida.forEach(te -> te.setHoraSalida(LocalDateTime.now()));
+        turnoEmpleadoRepository.saveAll(sinSalida);
     }
 
 }

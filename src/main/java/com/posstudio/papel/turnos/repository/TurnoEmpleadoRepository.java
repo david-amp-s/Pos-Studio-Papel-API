@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import com.posstudio.papel.turnos.model.Turno;
 import com.posstudio.papel.turnos.model.TurnoEmpleado;
 
 public interface TurnoEmpleadoRepository extends JpaRepository<TurnoEmpleado, Long> {
@@ -20,4 +21,5 @@ public interface TurnoEmpleadoRepository extends JpaRepository<TurnoEmpleado, Lo
 
     Optional<TurnoEmpleado> findByTurnoIdAndEmpleadoId(Long turnoId, Long empleadoId);
 
+    List<TurnoEmpleado> findByTurnoIdAndHoraSalidaIsNull(Long turnoId);
 }

@@ -111,7 +111,23 @@ public class TurnoServiceImpl implements TurnoService {
 
     @Override
     public TurnoResponsiveDTO cerrarTurno(Long turnoId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'cerrarTurno'");
+        // validar que el turno este abierto
+        Turno turno = buscarTurnoId(turnoId);
+        if (turno.getEstadoTurno() != EstadoTurno.ABIERTO) {
+            throw new BusinessException("El turno ya se encuentra cerrado");
+        }
+        // salida de empleados
+        turnoEmpleadoService.registarCierreTurno(turno);
+        // en modulo de ventas no puede haber una venta pendiente
+        // registrar dinero cierre (Donde si dinero cierre <= 0 y lo traeremos del
+        // modulo de ventas ) registraremos un log pero todavia no esta en el mvp
+
+        turno.setEstadoTurno(EstadoTurno.CERRADO);
+        turno.setDineroCierre(BigDecimal.ZERO);
+        turno.setDiferencia(BigDecimal.ZERO);
+        turno.setFechaCierre(LocalDateTime.now());
+        // cerrar turno
+        turnoRepository.save(turno);
+        return conversorDTO(turno);
     }
 }

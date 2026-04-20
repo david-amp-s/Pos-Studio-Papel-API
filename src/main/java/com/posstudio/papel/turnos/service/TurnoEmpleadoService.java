@@ -13,4 +13,6 @@ public interface TurnoEmpleadoService {
     List<TurnoEmpleadoResponsiveDTO> registrarSalidaEmpleado(TurnoEmpleadoRequest data, Turno turno);
 
     void eliminarRegistroEmpleado(Turno turno, Long empleadoId);
+
+    void registarCierreTurno(Turno turno);
 }
