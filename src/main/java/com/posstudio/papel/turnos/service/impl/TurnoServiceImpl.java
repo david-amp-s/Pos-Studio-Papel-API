@@ -130,4 +130,10 @@ public class TurnoServiceImpl implements TurnoService {
         turnoRepository.save(turno);
         return conversorDTO(turno);
     }
+
+    public TurnoResponsiveDTO obtenerTurnoActivo() {
+        return turnoRepository.findByEstadoTurno(EstadoTurno.ABIERTO)
+                .map(this::conversorDTO)
+                .orElse(null);
+    }
 }

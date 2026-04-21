@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/api/turnos")
@@ -41,6 +42,11 @@ public class TurnoController {
             @Valid @RequestBody TurnoEmpleadoRequest data) {
 
         return ResponseEntity.ok(ApiResponse.ok(turnoService.editarTurno(id, data)));
+    }
+
+    @GetMapping()
+    public ResponseEntity<ApiResponse<TurnoResponsiveDTO>> obtenerTurno() {
+        return ResponseEntity.ok(ApiResponse.ok(turnoService.obtenerTurnoActivo()));
     }
 
 }

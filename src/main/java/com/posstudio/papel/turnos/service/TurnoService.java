@@ -13,4 +13,6 @@ public interface TurnoService {
     TurnoResponsiveDTO cerrarTurno(Long turnoId);
 
     Turno buscarTurnoId(Long id);
+
+    TurnoResponsiveDTO obtenerTurnoActivo();
 }
