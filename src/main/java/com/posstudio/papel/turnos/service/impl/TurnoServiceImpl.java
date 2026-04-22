@@ -3,6 +3,7 @@ package com.posstudio.papel.turnos.service.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import com.posstudio.papel.common.enums.TipoTurno;
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.turnos.dto.request.TurnoEmpleadoRequest;
+import com.posstudio.papel.turnos.dto.responsive.EmpleadoResponsiveDTO;
 import com.posstudio.papel.turnos.dto.responsive.TurnoResponsiveDTO;
 import com.posstudio.papel.turnos.model.Turno;
 import com.posstudio.papel.turnos.repository.TurnoRepository;
@@ -135,5 +137,21 @@ public class TurnoServiceImpl implements TurnoService {
         return turnoRepository.findByEstadoTurno(EstadoTurno.ABIERTO)
                 .map(this::conversorDTO)
                 .orElse(null);
+    }
+
+    @Override
+    public List<EmpleadoResponsiveDTO> empleadoEnTurno() {
+        Turno turno = turnoRepository.findByEstadoTurno(EstadoTurno.ABIERTO)
+                .orElseThrow(() -> new BusinessException("No hay turno abierto"));
+        return turnoEmpleadoService.listarEmpleadosEnTurno(turno.getId()).stream()
+                .map(emp -> new EmpleadoResponsiveDTO(emp.getId(), emp.getNombre())).toList();
+    }
+
+    @Override
+    public List<EmpleadoResponsiveDTO> empleadosAfueraTurno() {
+        Turno turno = turnoRepository.findByEstadoTurno(EstadoTurno.ABIERTO)
+                .orElseThrow(() -> new BusinessException("No hay turno abierto"));
+        return turnoEmpleadoService.listarEmpleadosFueraDeTurno(turno.getId()).stream()
+                .map(emp -> new EmpleadoResponsiveDTO(emp.getId(), emp.getNombre())).toList();
     }
 }

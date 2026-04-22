@@ -7,9 +7,11 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
+import com.posstudio.papel.common.enums.EstadoTurno;
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.turnos.dto.request.TurnoEmpleadoRequest;
+import com.posstudio.papel.turnos.dto.responsive.EmpleadoResponsiveDTO;
 import com.posstudio.papel.turnos.dto.responsive.TurnoEmpleadoResponsiveDTO;
 import com.posstudio.papel.turnos.model.Empleado;
 import com.posstudio.papel.turnos.model.Turno;
@@ -124,6 +126,16 @@ public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
 
         sinSalida.forEach(te -> te.setHoraSalida(LocalDateTime.now()));
         turnoEmpleadoRepository.saveAll(sinSalida);
+    }
+
+    @Override
+    public List<Empleado> listarEmpleadosEnTurno(Long turnoId) {
+        return turnoEmpleadoRepository.findEmpleadosByTurnoId(turnoId);
+    }
+
+    @Override
+    public List<Empleado> listarEmpleadosFueraDeTurno(Long turnoId) {
+        return turnoEmpleadoRepository.findEmpleadosNotInTurno(turnoId);
     }
 
 }

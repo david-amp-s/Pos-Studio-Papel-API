@@ -8,14 +8,14 @@ import com.posstudio.papel.common.enums.EstadoTurno;
 import com.posstudio.papel.common.enums.TipoTurno;
 
 public record TurnoResponsiveDTO(
-        Long id,
-        LocalDate fecha,
-        TipoTurno tipoTurno,
-        EstadoTurno estadoTurno,
-        BigDecimal dinero_apertura,
-        BigDecimal dineroCierre,
-        BigDecimal diferencia,
-        LocalDateTime fechaApertura,
-        LocalDateTime fechaCierre) {
+                Long id,
+                LocalDate fecha,
+                TipoTurno tipoTurno,
+                EstadoTurno estadoTurno,
+                BigDecimal dineroApertura,
+                BigDecimal dineroCierre,
+                BigDecimal diferencia,
+                LocalDateTime fechaApertura,
+                LocalDateTime fechaCierre) {
 
 }
