@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.posstudio.papel.common.enums.EstadoTurno;
 import com.posstudio.papel.turnos.model.Empleado;
+import com.posstudio.papel.turnos.model.Turno;
 import com.posstudio.papel.turnos.model.TurnoEmpleado;
 
 public interface TurnoEmpleadoRepository extends JpaRepository<TurnoEmpleado, Long> {
@@ -19,7 +19,7 @@ public interface TurnoEmpleadoRepository extends JpaRepository<TurnoEmpleado, Lo
             """)
     List<Long> findEmpleadoIdsByTurnoId(Long turnoId);
 
-    List<TurnoEmpleado> findByTurnoIdAndEmpleadoIdIn(Long turnoId, List<Long> empleadoIds);
+    List<TurnoEmpleado> findByTurnoAndEmpleadoIn(Turno turno, List<Empleado> empleado);
 
     Optional<TurnoEmpleado> findByTurnoIdAndEmpleadoId(Long turnoId, Long empleadoId);
 

@@ -6,14 +6,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.posstudio.papel.common.enums.EstadoTurno;
+import com.posstudio.papel.common.enums.TipoAccionTurno;
 import com.posstudio.papel.common.enums.TipoTurno;
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.turnos.dto.request.TurnoEmpleadoRequest;
 import com.posstudio.papel.turnos.dto.responsive.EmpleadoResponsiveDTO;
 import com.posstudio.papel.turnos.dto.responsive.TurnoResponsiveDTO;
+import com.posstudio.papel.turnos.model.Empleado;
 import com.posstudio.papel.turnos.model.Turno;
 import com.posstudio.papel.turnos.repository.TurnoRepository;
 import com.posstudio.papel.turnos.service.TurnoEmpleadoService;
@@ -23,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TurnoServiceImpl implements TurnoService {
     private final TurnoRepository turnoRepository;
     private final TurnoEmpleadoService turnoEmpleadoService;
@@ -34,25 +38,35 @@ public class TurnoServiceImpl implements TurnoService {
     }
 
     @Override
+    @Transactional
     public TurnoResponsiveDTO crearTurno(TurnoEmpleadoRequest data) {
+
+        if (data.tipoAccionTurno() == null || data.tipoAccionTurno() != TipoAccionTurno.INGRESO) {
+            throw new BusinessException("Tipo accion debe ser ingreso");
+        }
         // buscar no haya turno abierto
         if (turnoRepository.findByEstadoTurno(EstadoTurno.ABIERTO).isPresent()) {
             throw new BusinessException("Ya hay un turno activo");
         }
+
         LocalDate fecha = LocalDate.now();
         TipoTurno tipoTurno = verificacionHorario(fecha);
-        LocalDateTime fechaApertura = LocalDateTime.now();
+
         Turno turno = Turno.builder()
                 .fecha(fecha)
                 .tipoTurno(tipoTurno)
                 .estadoTurno(EstadoTurno.ABIERTO)
                 .dineroApertura(BigDecimal.valueOf(
                         200000))
-                .fechaApertura(fechaApertura)
+                .fechaApertura(LocalDateTime.now())
                 .build();
-        turnoRepository.save(turno);
-        turnoEmpleadoService.crearTurnoEmpleado(data, turno);
-        return conversorDTO(turno);
+
+        if (data.empleadoIds() == null || data.empleadoIds().isEmpty()) {
+            throw new BusinessException("Debe asignar al menos un empleado al turno");
+        }
+        Turno turnoGuardado = turnoRepository.save(turno);
+        turnoEmpleadoService.crearTurnoEmpleado(data, turnoGuardado);
+        return conversorDTO(turnoGuardado);
     }
 
     private TipoTurno verificacionHorario(LocalDate fecha) {
@@ -80,13 +94,15 @@ public class TurnoServiceImpl implements TurnoService {
     }
 
     @Override
-    public TurnoResponsiveDTO editarTurno(Long turnoId, TurnoEmpleadoRequest data) {
+    @Transactional
+    public TurnoResponsiveDTO editarTurno(TurnoEmpleadoRequest data) {
         // validar que el accion turno no sea null
         if (data.tipoAccionTurno() == null) {
             throw new ResourceNotFoundException("La accion no puede ser null", null);
         }
         // buscar turno y validar
-        Turno turno = buscarTurnoId(turnoId);
+        Turno turno = turnoRepository.findByEstadoTurno(EstadoTurno.ABIERTO)
+                .orElseThrow(() -> new BusinessException("No hay turnos activos"));
         if (turno.getEstadoTurno() != EstadoTurno.ABIERTO) {
             throw new BusinessException("El turno debe de estar abierto para registrar empleados");
         }
@@ -94,29 +110,34 @@ public class TurnoServiceImpl implements TurnoService {
         // hacer un listado de opciones:
         switch (data.tipoAccionTurno()) {
             // añadir empleados
-            case INGRESO:
+            case INGRESO ->
                 turnoEmpleadoService.crearTurnoEmpleado(data, turno);
-                break;
+
             // generar salida de empleado
-            case SALIDA:
-                turnoEmpleadoService.registrarSalidaEmpleado(data, turno);
-                break;
+            case SALIDA -> turnoEmpleadoService.registrarSalidaEmpleado(data, turno);
             // eliminar registro empleado
-            case ELIMINAR:
-                turnoEmpleadoService.eliminarRegistroEmpleado(turno, data.empleadoIds().getFirst());
-                break;
-            default:
-                throw new BusinessException("Acción inválida");
+            case ELIMINAR -> turnoEmpleadoService.eliminarRegistroEmpleado(turno, data.empleadoIds().getFirst());
+            default -> throw new BusinessException("Acción inválida");
         }
         return conversorDTO(turno);
     }
 
     @Override
-    public TurnoResponsiveDTO cerrarTurno(Long turnoId) {
+    @Transactional
+    public TurnoResponsiveDTO cerrarTurno() {
         // validar que el turno este abierto
-        Turno turno = buscarTurnoId(turnoId);
+        Turno turno = turnoRepository.findByEstadoTurno(EstadoTurno.ABIERTO)
+                .orElseThrow(() -> new BusinessException("No hay turno activo"));
+
         if (turno.getEstadoTurno() != EstadoTurno.ABIERTO) {
             throw new BusinessException("El turno ya se encuentra cerrado");
+        }
+
+        // validar que haya al menos un empleado en turno
+        List<Empleado> empleadosActivos = turnoEmpleadoService.listarEmpleadosEnTurno(turno.getId());
+
+        if (empleadosActivos.isEmpty()) {
+            throw new BusinessException("No se puede cerrar un turno sin empleados");
         }
         // salida de empleados
         turnoEmpleadoService.registarCierreTurno(turno);

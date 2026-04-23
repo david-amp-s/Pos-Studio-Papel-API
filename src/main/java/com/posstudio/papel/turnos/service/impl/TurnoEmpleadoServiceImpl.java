@@ -6,12 +6,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.posstudio.papel.common.enums.EstadoTurno;
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.turnos.dto.request.TurnoEmpleadoRequest;
-import com.posstudio.papel.turnos.dto.responsive.EmpleadoResponsiveDTO;
 import com.posstudio.papel.turnos.dto.responsive.TurnoEmpleadoResponsiveDTO;
 import com.posstudio.papel.turnos.model.Empleado;
 import com.posstudio.papel.turnos.model.Turno;
@@ -24,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
 
     private final EmpleadoService empleadoService;
@@ -35,29 +35,40 @@ public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
     }
 
     @Override
+    @Transactional
     public List<TurnoEmpleadoResponsiveDTO> crearTurnoEmpleado(TurnoEmpleadoRequest data, Turno turno) {
 
         // filtro turnoEmpleado
         List<Empleado> empleados = filtroTurnoEmpleado(data);
 
         // verificar que los empleados no esten duplicados en el turno
-        List<Long> empleadosExistentes = turnoEmpleadoRepository.findEmpleadoIdsByTurnoId(turno.getId());
-        for (Empleado empleado : empleados) {
-            if (empleadosExistentes.contains(empleado.getId())) {
-                throw new BusinessException("El empleado con id " + empleado.getId() + " ya está en el turno");
-            }
+        List<Empleado> empleadosExistentes = turnoEmpleadoRepository.findEmpleadosByTurnoId(turno.getId());
+
+        List<Empleado> empleadosNuevos = empleados.stream().filter(emp -> !empleadosExistentes.contains(emp))
+                .toList();
+
+        if (empleadosNuevos.isEmpty()) {
+            throw new BusinessException("Todos los empleados ya están en el turno");
+        }
+
+        List<TurnoEmpleado> empleadosConSalida = turnoEmpleadoRepository
+                .findByTurnoAndEmpleadoIn(turno, empleadosNuevos)
+                .stream().filter(te -> te.getHoraSalida() != null)
+                .toList();
+
+        if (!empleadosConSalida.isEmpty()) {
+            throw new BusinessException("Los siguientes empleados ya salieron del turno y no pueden reingresar: "
+                    + empleadosConSalida.stream().map(te -> te.getEmpleado().getNombre()).toList());
         }
 
         // guardar en la base de datos
-        List<TurnoEmpleado> turnoEmpleados = empleados.stream().map(emp -> TurnoEmpleado.builder()
+        List<TurnoEmpleado> turnoEmpleados = empleadosNuevos.stream().map(emp -> TurnoEmpleado.builder()
                 .turno(turno)
                 .empleado(emp)
                 .horaEntrada(LocalDateTime.now())
                 .build())
                 .toList();
-        turnoEmpleadoRepository.saveAll(turnoEmpleados);
-        // retornarlo mapeado
-        return turnoEmpleados.stream().map(this::conversorDTO).toList();
+        return turnoEmpleadoRepository.saveAll(turnoEmpleados).stream().map(this::conversorDTO).toList();
     }
 
     @Override

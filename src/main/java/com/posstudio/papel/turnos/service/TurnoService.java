@@ -10,9 +10,9 @@ import com.posstudio.papel.turnos.model.Turno;
 public interface TurnoService {
     TurnoResponsiveDTO crearTurno(TurnoEmpleadoRequest data);
 
-    TurnoResponsiveDTO editarTurno(Long turnoId, TurnoEmpleadoRequest data);
+    TurnoResponsiveDTO editarTurno(TurnoEmpleadoRequest data);
 
-    TurnoResponsiveDTO cerrarTurno(Long turnoId);
+    TurnoResponsiveDTO cerrarTurno();
 
     Turno buscarTurnoId(Long id);
 
