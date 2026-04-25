@@ -3,7 +3,9 @@ package com.posstudio.papel.turnos.service.impl;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,23 +44,24 @@ public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
         List<Empleado> empleados = filtroTurnoEmpleado(data);
 
         // verificar que los empleados no esten duplicados en el turno
-        List<Empleado> empleadosExistentes = turnoEmpleadoRepository.findEmpleadosByTurnoId(turno.getId());
+        List<Long> idEmpleadosExistentes = turnoEmpleadoRepository.findEmpleadosActivosByTurnoId(turno.getId()).stream()
+                .map(Empleado::getId).toList();
 
-        List<Empleado> empleadosNuevos = empleados.stream().filter(emp -> !empleadosExistentes.contains(emp))
+        List<Empleado> empleadosNuevos = empleados.stream().filter(emp -> !idEmpleadosExistentes.contains(emp.getId()))
                 .toList();
 
         if (empleadosNuevos.isEmpty()) {
             throw new BusinessException("Todos los empleados ya están en el turno");
         }
 
-        List<TurnoEmpleado> empleadosConSalida = turnoEmpleadoRepository
-                .findByTurnoAndEmpleadoIn(turno, empleadosNuevos)
-                .stream().filter(te -> te.getHoraSalida() != null)
-                .toList();
+        List<TurnoEmpleado> empleadosConSalidaPrevia = turnoEmpleadoRepository
+                .findSalidasByTurnoAndEmpleadoIn(turno, empleadosNuevos);
 
-        if (!empleadosConSalida.isEmpty()) {
-            throw new BusinessException("Los siguientes empleados ya salieron del turno y no pueden reingresar: "
-                    + empleadosConSalida.stream().map(te -> te.getEmpleado().getNombre()).toList());
+        if (!empleadosConSalidaPrevia.isEmpty()) {
+            String nombres = empleadosConSalidaPrevia.stream()
+                    .map(te -> te.getEmpleado().getNombre())
+                    .collect(Collectors.joining(", "));
+            throw new BusinessException("No se puede reingresar a empleados que ya salieron: " + nombres);
         }
 
         // guardar en la base de datos
@@ -72,48 +75,61 @@ public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
     }
 
     @Override
+    @Transactional
     public List<TurnoEmpleadoResponsiveDTO> registrarSalidaEmpleado(TurnoEmpleadoRequest data, Turno turno) {
 
-        // filtro TurnoEmpleado
-        List<Empleado> empleados = filtroTurnoEmpleado(data);
-        // validar que los empleados esten dentro del turno
-        List<Long> empleadosExistentes = turnoEmpleadoRepository.findEmpleadoIdsByTurnoId(turno.getId());
-        for (Empleado empleado : empleados) {
-            if (!empleadosExistentes.contains(empleado.getId())) {
-                throw new BusinessException(
-                        "El empleado con id " + empleado.getId() + " no está registrado en el turno");
-            }
-        }
-        // validar que el turno no quede solo
+        // 1. Filtrar y validar empleados solicitados
 
-        if (empleadosExistentes.size() - empleados.size() <= 0) {
+        List<Empleado> empleadosSolicitados = filtroTurnoEmpleado(data);
+
+        List<Long> idsEmpleadosSolicitados = empleadosSolicitados.stream().map(Empleado::getId).toList();
+
+        // 2. Obtener IDs de empleados ACTIVOS en el turno
+        List<Long> idsEmpleadosActivos = turnoEmpleadoRepository.findEmpleadosActivosByTurnoId(turno.getId()).stream()
+                .map(Empleado::getId).toList();
+        // 3. Validar que TODOS los solicitados estén activos
+        List<Long> idsNoActivos = idsEmpleadosSolicitados.stream().filter(id -> !idsEmpleadosActivos.contains(id))
+                .toList();
+
+        if (!idsNoActivos.isEmpty()) {
+            throw new BusinessException("Los siguientes empleados no están activos en el turno: " + idsNoActivos);
+        }
+        // 4. Validar que el turno NO quede sin empleados
+        if (idsEmpleadosActivos.size() - idsEmpleadosSolicitados.size() <= 0) {
             throw new BusinessException("El turno no puede quedar sin empleados");
         }
-        // registrar salida
-        List<Long> empleadoIds = empleados.stream().map(Empleado::getId).toList();
-        List<TurnoEmpleado> turnoEmpleados = turnoEmpleadoRepository
-                .findByTurnoIdAndEmpleadoIdIn(turno.getId(), empleadoIds);
+        // 5. Registrar salida SOLO de los activos (usando el método correcto)
+        List<TurnoEmpleado> turnoEmpleados = turnoEmpleadoRepository.findActivosByTurnoAndEmpleadoIn(turno,
+                empleadosSolicitados);
 
         turnoEmpleados.forEach(te -> te.setHoraSalida(LocalDateTime.now()));
-        // guardarla
         turnoEmpleadoRepository.saveAll(turnoEmpleados);
 
-        // retornar mapeo
         return turnoEmpleados.stream().map(this::conversorDTO).toList();
     }
 
     @Override
+    @Transactional
     public void eliminarRegistroEmpleado(Turno turno, Long empleadoId) {
+        // buscar turno empleadp
         TurnoEmpleado turnoEmpleado = turnoEmpleadoRepository.findByTurnoIdAndEmpleadoId(turno.getId(), empleadoId)
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Turno empleado no encontrado", empleadoId.toString()));
-
+        if (turnoEmpleado.getHoraSalida() != null) {
+            throw new BusinessException("No se puede eliminar un empleado que ya registró salida");
+        }
+        // validar que el turno no quede vacio
+        List<Empleado> empleadosEnTurno = turnoEmpleadoRepository.findEmpleadosActivosByTurnoId(turno.getId());
+        if (empleadosEnTurno.size() <= 1) {
+            throw new BusinessException("El turno no puede quedar vacio");
+        }
+        // max 1 hora
         LocalDateTime limiteEdicion = LocalDateTime.now().minusHours(1);
 
         if (turnoEmpleado.getHoraEntrada().isBefore(limiteEdicion)) {
             throw new BusinessException("No se puede eliminar un registro con más de 1 hora de antigüedad");
         }
-
+        // eliminar
         turnoEmpleadoRepository.delete(turnoEmpleado);
     }
 
@@ -125,8 +141,7 @@ public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
             throw new BusinessException("La lista de empleados contiene IDs duplicados");
         }
         // buscar empleados
-        List<Empleado> empleados = validacionIds.stream().map(emp -> empleadoService.findById(emp)).toList();
-        return empleados;
+        return validacionIds.stream().map(emp -> empleadoService.findById(emp)).toList();
 
     }
 
@@ -141,12 +156,12 @@ public class TurnoEmpleadoServiceImpl implements TurnoEmpleadoService {
 
     @Override
     public List<Empleado> listarEmpleadosEnTurno(Long turnoId) {
-        return turnoEmpleadoRepository.findEmpleadosByTurnoId(turnoId);
+        return turnoEmpleadoRepository.findEmpleadosActivosByTurnoId(turnoId);
     }
 
     @Override
     public List<Empleado> listarEmpleadosFueraDeTurno(Long turnoId) {
-        return turnoEmpleadoRepository.findEmpleadosNotInTurno(turnoId);
+        return turnoEmpleadoRepository.findEmpleadosSinRegistroEnTurno(turnoId);
     }
 
 }

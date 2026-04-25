@@ -35,17 +35,17 @@ public class TurnoController {
         return ResponseEntity.ok(ApiResponse.ok(turnoService.crearTurno(data)));
     }
 
-    @PutMapping("{id}")
-    public ResponseEntity<ApiResponse<TurnoResponsiveDTO>> cerrarTurno(@PathVariable Long id) {
+    @PutMapping("cerrar")
+    public ResponseEntity<ApiResponse<TurnoResponsiveDTO>> cerrarTurno() {
 
-        return ResponseEntity.ok(ApiResponse.ok(turnoService.cerrarTurno(id)));
+        return ResponseEntity.ok(ApiResponse.ok(turnoService.cerrarTurno()));
     }
 
-    @PutMapping("editar/{id}")
-    public ResponseEntity<ApiResponse<TurnoResponsiveDTO>> editarTurno(@PathVariable Long id,
+    @PutMapping("editar")
+    public ResponseEntity<ApiResponse<TurnoResponsiveDTO>> editarTurno(
             @Valid @RequestBody TurnoEmpleadoRequest data) {
 
-        return ResponseEntity.ok(ApiResponse.ok(turnoService.editarTurno(id, data)));
+        return ResponseEntity.ok(ApiResponse.ok(turnoService.editarTurno(data)));
     }
 
     @GetMapping()
