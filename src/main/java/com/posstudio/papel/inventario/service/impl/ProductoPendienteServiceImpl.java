@@ -3,6 +3,7 @@ package com.posstudio.papel.inventario.service.impl;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.inventario.dto.request.ProductoPendienteRequestDTO;
@@ -13,11 +14,11 @@ import com.posstudio.papel.inventario.repository.ProductoPendienteRepository;
 import com.posstudio.papel.inventario.service.ProductoPendienteService;
 import com.posstudio.papel.inventario.service.ProductoService;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductoPendienteServiceImpl implements ProductoPendienteService {
     private final ProductoPendienteRepository productoPendienteRepository;
     private final ProductoService productoService;
@@ -40,7 +41,6 @@ public class ProductoPendienteServiceImpl implements ProductoPendienteService {
         return conversorDTO(productoPendiente);
     }
 
-    @Transactional
     @Override
     public void ajustarProductoPendiente(Long id, ProductoRequestDTO data) {
         ProductoPendiente productoPendiente = findById(id);

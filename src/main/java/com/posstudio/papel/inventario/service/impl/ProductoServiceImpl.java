@@ -3,6 +3,7 @@ package com.posstudio.papel.inventario.service.impl;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.posstudio.papel.common.enums.TipoMovimientoInventario;
 import com.posstudio.papel.common.exception.BusinessException;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductoServiceImpl implements ProductoService {
     private final ProductoRepository productoRepository;
     private final CategoriaService categoriaService;
@@ -50,8 +52,8 @@ public class ProductoServiceImpl implements ProductoService {
                 .ubicacion(ubicacion)
                 .unidadNegocio(data.unidadNegocio())
                 .build();
-        productoRepository.save(producto);
-        ajustarStock(TipoMovimientoInventario.CREACION, data.stock(), producto, producto.getId());
+        Producto productoGuardado = productoRepository.save(producto);
+        ajustarStock(TipoMovimientoInventario.CREACION, data.stock(), productoGuardado, productoGuardado.getId());
         return conversorDTO(producto);
     }
 

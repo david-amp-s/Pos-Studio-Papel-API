@@ -1,6 +1,7 @@
 package com.posstudio.papel.inventario.service.impl;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.posstudio.papel.inventario.dto.request.MovimientoInventarioRequestDTO;
 import com.posstudio.papel.inventario.model.MovimientoInventario;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MovimientoInventarioServiceImp implements MovimientoInventarioService {
     private final MovimientoInventarioRepository movimientoInventarioRepository;
 
