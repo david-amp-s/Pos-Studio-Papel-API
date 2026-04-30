@@ -84,4 +84,26 @@ public class VentaServiceImpl implements VentaService {
         return ventaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada", id.toString()));
     }
+
+    @Override
+    public List<VentaResponsiveDTO> añadirDetalleventa(Long ventaId) {
+        Venta venta = findById(ventaId);
+        if (venta.getEstado() != EstadoVenta.ABIERTA) {
+            throw new BusinessException("Para añadir Detalle venta debe de esatr abierta la venta");
+        }
+
+        return conversorDTO(venta);
+    }
+
+    @Override
+    public List<VentaResponsiveDTO> editarDetalleventa() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'editarDetalleventa'");
+    }
+
+    @Override
+    public List<VentaResponsiveDTO> eliminarDetalleVenta() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'eliminarDetalleVenta'");
+    }
 }

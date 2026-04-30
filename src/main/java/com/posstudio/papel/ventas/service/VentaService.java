@@ -16,4 +16,9 @@ public interface VentaService {
 
     // flujo
 
+    List<VentaResponsiveDTO> añadirDetalleventa(Long ventaId);
+
+    List<VentaResponsiveDTO> editarDetalleventa();
+
+    List<VentaResponsiveDTO> eliminarDetalleVenta();
 }
