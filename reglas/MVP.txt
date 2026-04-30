@@ -14,7 +14,7 @@ turnos()
  empleado 
  turno
  turno_empleado
- registro_pago
+
 
 ventas()
   venta

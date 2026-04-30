@@ -131,3 +131,4 @@ CREATE INDEX IF NOT EXISTS idx_turno_fecha ON turno(fecha);
 CREATE INDEX IF NOT EXISTS idx_turno_empleado_turno ON turno_empleado(turno_id);
 CREATE INDEX IF NOT EXISTS idx_turno_empleado_empleado ON turno_empleado(empleado_id);
 CREATE INDEX IF NOT EXISTS idx_pago_turno_empleado ON registro_pago(turno_empleado_id);
+

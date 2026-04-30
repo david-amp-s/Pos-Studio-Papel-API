@@ -20,8 +20,8 @@ turnos()
 empleado 
  turno
  turno_empleado
- registro_pago
 -----------------------------
+ registro_pago
 comentario_turno
 log_turno
 ------------------------------
