@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.posstudio.papel.common.responsive.ApiResponse;
 import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
+import com.posstudio.papel.ventas.dto.request.PagoVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.responsive.VentaResponsiveDTO;
 import com.posstudio.papel.ventas.service.VentaService;
 
@@ -55,10 +56,24 @@ public class VentaController {
         return ResponseEntity.ok(ApiResponse.ok(ventaService.añadirDetalleventa(id, data)));
     }
 
-    @PutMapping("editar/{detalleVentaId}/{ventaId}")
+    @PutMapping("editar/{ventaId}/{detalleVentaId}")
     public ResponseEntity<ApiResponse<VentaResponsiveDTO>> editarDetalleVenta(@PathVariable Long detalleVentaId,
             @Valid @RequestBody DetalleVentaRequestDTO data,
             @PathVariable Long ventaId) {
         return ResponseEntity.ok(ApiResponse.ok(ventaService.editarDetalleventa(detalleVentaId, data, ventaId)));
     }
+
+    @DeleteMapping("eliminar/{ventaId}/{detalleVentaId}")
+    public ResponseEntity<Void> eliminarDetalleVenta(@PathVariable Long ventaId, @PathVariable Long detalleVentaId) {
+        ventaService.eliminarDetalleVenta(ventaId, detalleVentaId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("cerrar/{ventaId}")
+    public ResponseEntity<ApiResponse<VentaResponsiveDTO>> cerrarVenta(@PathVariable Long ventaId,
+            @Valid @RequestBody PagoVentaRequestDTO data) {
+
+        return ResponseEntity.ok(ApiResponse.ok(ventaService.cerrarVenta(ventaId, data)));
+    }
+
 }

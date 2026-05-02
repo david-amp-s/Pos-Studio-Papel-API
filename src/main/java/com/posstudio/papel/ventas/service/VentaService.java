@@ -3,6 +3,7 @@ package com.posstudio.papel.ventas.service;
 import java.util.List;
 
 import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
+import com.posstudio.papel.ventas.dto.request.PagoVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.responsive.VentaResponsiveDTO;
 
 public interface VentaService {
@@ -23,5 +24,5 @@ public interface VentaService {
 
     VentaResponsiveDTO eliminarDetalleVenta(Long ventaId, Long detalleVentaId);
 
-    VentaResponsiveDTO cerrarVenta();
+    VentaResponsiveDTO cerrarVenta(Long ventaId, PagoVentaRequestDTO pago);
 }

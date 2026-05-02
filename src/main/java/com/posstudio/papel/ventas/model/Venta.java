@@ -6,9 +6,7 @@ import java.util.List;
 
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.dialect.type.PostgreSQLEnumJdbcType;
-import org.springframework.security.core.parameters.P;
 
-import com.fasterxml.jackson.annotation.JsonFormat.Feature;
 import com.posstudio.papel.common.enums.EstadoVenta;
 import com.posstudio.papel.security.model.Usuario;
 import com.posstudio.papel.turnos.model.Turno;
@@ -71,5 +69,14 @@ public class Venta {
     public void prePersist() {
         this.fecha = LocalDateTime.now();
 
+    }
+
+    public void recalcularTotal() {
+        if (detalles != null && !detalles.isEmpty()) {
+            this.total = detalles.stream().map(DetalleVenta::getSubtotal)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        } else {
+            this.total = BigDecimal.ZERO;
+        }
     }
 }

@@ -15,10 +15,14 @@ import com.posstudio.papel.security.model.Usuario;
 import com.posstudio.papel.turnos.model.Turno;
 import com.posstudio.papel.turnos.repository.TurnoRepository;
 import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
+import com.posstudio.papel.ventas.dto.request.PagoVentaRequestDTO;
+import com.posstudio.papel.ventas.dto.responsive.DetalleVentaResponsiveDTO;
+import com.posstudio.papel.ventas.dto.responsive.PagoVentaResponsiveDTO;
 import com.posstudio.papel.ventas.dto.responsive.VentaResponsiveDTO;
 import com.posstudio.papel.ventas.model.Venta;
 import com.posstudio.papel.ventas.repository.VentaRepository;
 import com.posstudio.papel.ventas.service.DetalleVentaService;
+import com.posstudio.papel.ventas.service.PagoVentaService;
 import com.posstudio.papel.ventas.service.VentaService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,10 +34,42 @@ public class VentaServiceImpl implements VentaService {
     private final VentaRepository ventaRepository;
     private final TurnoRepository turnoRepository;
     private final DetalleVentaService detalleVentaService;
+    private final PagoVentaService pagoVentaService;
 
     private VentaResponsiveDTO conversorDTO(Venta data) {
-        return new VentaResponsiveDTO(data.getId(), data.getUsuario().getNombre(), data.getTurno().getTipoTurno(),
-                data.getTotal(), data.getFecha(), data.getEstado(), data.getDetalles().size());
+        // Convertir los detalles de venta
+        List<DetalleVentaResponsiveDTO> detallesDTO = data.getDetalles() != null
+                ? data.getDetalles().stream()
+                        .map(detalle -> new DetalleVentaResponsiveDTO(
+                                detalle.getId(),
+                                detalle.getProducto().getNombre(),
+                                detalle.getCantidad(),
+                                detalle.getPrecioUnitario(),
+                                detalle.getSubtotal(),
+                                detalle.getDescuento()))
+                        .toList()
+                : List.of(); // Lista vacía si no hay detalles
+
+        // Convertir los pagos
+        List<PagoVentaResponsiveDTO> pagosDTO = data.getPagos() != null
+                ? data.getPagos().stream()
+                        .map(pago -> new PagoVentaResponsiveDTO(
+                                pago.getId(),
+                                pago.getVenta().getId(),
+                                pago.getMetodo(),
+                                pago.getMonto()))
+                        .toList()
+                : List.of(); // Lista vacía si no hay pagos
+
+        return new VentaResponsiveDTO(
+                data.getId(),
+                data.getUsuario().getNombre(),
+                data.getTurno().getTipoTurno(),
+                data.getTotal(),
+                data.getFecha(),
+                data.getEstado(),
+                detallesDTO,
+                pagosDTO);
     }
 
     @Override
@@ -93,6 +129,7 @@ public class VentaServiceImpl implements VentaService {
             throw new BusinessException("Para añadir Detalle venta debe de estar abierta la venta");
         }
         detalleVentaService.crearDetalleVenta(data, venta);
+        venta.recalcularTotal();
         return conversorDTO(venta);
     }
 
@@ -103,14 +140,22 @@ public class VentaServiceImpl implements VentaService {
             throw new BusinessException("Para añadir Detalle venta debe de estar abierta la venta");
         }
         detalleVentaService.editarDetalleVenta(data, detalleVentaId, venta);
-
+        venta.recalcularTotal();
         return conversorDTO(venta);
     }
 
     @Override
-    public VentaResponsiveDTO cerrarVenta() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'cerrarVenta'");
+    public VentaResponsiveDTO cerrarVenta(Long ventaId, PagoVentaRequestDTO pago) {
+        Venta venta = findById(ventaId);
+        if (venta.getEstado() != EstadoVenta.ABIERTA) {
+            throw new BusinessException("Para cerrar la venta el estado debe de estar abierto");
+        }
+        if (venta.getDetalles().isEmpty()) {
+            throw new BusinessException("No se puede cerrar una venta sin productos");
+        }
+        pagoVentaService.añadirPago(pago, venta);
+        venta.setEstado(EstadoVenta.CERRADA);
+        return conversorDTO(venta);
     }
 
     @Override
@@ -121,6 +166,7 @@ public class VentaServiceImpl implements VentaService {
         }
 
         detalleVentaService.eliminarDetalleVenta(detalleVentaId, venta);
+        venta.recalcularTotal();
         return conversorDTO(venta);
     }
 
