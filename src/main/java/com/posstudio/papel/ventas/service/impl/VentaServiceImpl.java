@@ -14,9 +14,11 @@ import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.security.model.Usuario;
 import com.posstudio.papel.turnos.model.Turno;
 import com.posstudio.papel.turnos.repository.TurnoRepository;
+import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.responsive.VentaResponsiveDTO;
 import com.posstudio.papel.ventas.model.Venta;
 import com.posstudio.papel.ventas.repository.VentaRepository;
+import com.posstudio.papel.ventas.service.DetalleVentaService;
 import com.posstudio.papel.ventas.service.VentaService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,11 +29,11 @@ import lombok.RequiredArgsConstructor;
 public class VentaServiceImpl implements VentaService {
     private final VentaRepository ventaRepository;
     private final TurnoRepository turnoRepository;
+    private final DetalleVentaService detalleVentaService;
 
     private VentaResponsiveDTO conversorDTO(Venta data) {
         return new VentaResponsiveDTO(data.getId(), data.getUsuario().getNombre(), data.getTurno().getTipoTurno(),
-                data.getTotal(), data.getDescuento(), data.getFecha(), data.getEstado(), data.getDetalles(),
-                data.getPagos());
+                data.getTotal(), data.getFecha(), data.getEstado(), data.getDetalles().size());
     }
 
     @Override
@@ -44,7 +46,6 @@ public class VentaServiceImpl implements VentaService {
                 .usuario(usuario)
                 .turno(turno)
                 .total(BigDecimal.ZERO)
-                .descuento(BigDecimal.ZERO)
                 .estado(EstadoVenta.ABIERTA)
                 .build();
         ventaRepository.save(venta);
@@ -86,24 +87,41 @@ public class VentaServiceImpl implements VentaService {
     }
 
     @Override
-    public List<VentaResponsiveDTO> añadirDetalleventa(Long ventaId) {
+    public VentaResponsiveDTO añadirDetalleventa(Long ventaId, DetalleVentaRequestDTO data) {
         Venta venta = findById(ventaId);
         if (venta.getEstado() != EstadoVenta.ABIERTA) {
-            throw new BusinessException("Para añadir Detalle venta debe de esatr abierta la venta");
+            throw new BusinessException("Para añadir Detalle venta debe de estar abierta la venta");
         }
+        detalleVentaService.crearDetalleVenta(data, venta);
+        return conversorDTO(venta);
+    }
+
+    @Override
+    public VentaResponsiveDTO editarDetalleventa(Long detalleVentaId, DetalleVentaRequestDTO data, Long ventaId) {
+        Venta venta = findById(ventaId);
+        if (venta.getEstado() != EstadoVenta.ABIERTA) {
+            throw new BusinessException("Para añadir Detalle venta debe de estar abierta la venta");
+        }
+        detalleVentaService.editarDetalleVenta(data, detalleVentaId, venta);
 
         return conversorDTO(venta);
     }
 
     @Override
-    public List<VentaResponsiveDTO> editarDetalleventa() {
+    public VentaResponsiveDTO cerrarVenta() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'editarDetalleventa'");
+        throw new UnsupportedOperationException("Unimplemented method 'cerrarVenta'");
     }
 
     @Override
-    public List<VentaResponsiveDTO> eliminarDetalleVenta() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'eliminarDetalleVenta'");
+    public VentaResponsiveDTO eliminarDetalleVenta(Long ventaId, Long detalleVentaId) {
+        Venta venta = findById(ventaId);
+        if (venta.getEstado() != EstadoVenta.ABIERTA) {
+            throw new BusinessException("Para añadir Detalle venta debe de estar abierta la venta");
+        }
+
+        detalleVentaService.eliminarDetalleVenta(detalleVentaId, venta);
+        return conversorDTO(venta);
     }
+
 }

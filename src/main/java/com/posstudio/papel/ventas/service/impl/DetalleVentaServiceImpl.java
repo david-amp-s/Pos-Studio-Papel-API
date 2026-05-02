@@ -1,10 +1,12 @@
 package com.posstudio.papel.ventas.service.impl;
 
+import java.math.BigDecimal;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.posstudio.papel.common.enums.TipoMovimientoInventario;
 import com.posstudio.papel.common.exception.BusinessException;
+import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.inventario.model.Producto;
 import com.posstudio.papel.inventario.service.ProductoService;
 import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
@@ -35,27 +37,42 @@ public class DetalleVentaServiceImpl implements DetalleVentaService {
         if (verificarProducto != null) {
             throw new BusinessException("Ya hay un detalle venta con este producto en la misma venta");
         }
-        productoService.ajustarStock(TipoMovimientoInventario.VENTA, data.cantidad(), producto, venta.getId());
+
         DetalleVenta detalleVenta = DetalleVenta.builder()
                 .venta(venta)
                 .producto(producto)
                 .cantidad(data.cantidad())
                 .precioUnitario(producto.getPrecio())
+                .descuento(BigDecimal.ZERO)
                 .build();
         detalleVentaRepository.save(detalleVenta);
         return conversorDTO(detalleVenta);
     }
 
     @Override
-    public DetalleVentaResponsiveDTO editarDetalleVenta(DetalleVentaRequestDTO data, Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'editarDetalleVenta'");
+    public DetalleVentaResponsiveDTO editarDetalleVenta(DetalleVentaRequestDTO data, Long detalleVentaId, Venta venta) {
+
+        DetalleVenta detalleVenta = findById(detalleVentaId);
+        if (venta.getId() != detalleVenta.getVenta().getId()) {
+            throw new BusinessException("No se puede modificar el detalle producto de otro turno");
+        }
+        detalleVenta.setCantidad(data.cantidad());
+        detalleVenta.setDescuento(data.descuento());
+        detalleVentaRepository.save(detalleVenta);
+        return conversorDTO(detalleVenta);
+    }
+
+    private DetalleVenta findById(Long id) {
+        return detalleVentaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Detalle venta no encontrada", id.toString()));
     }
 
     @Override
-    public DetalleVentaRequestDTO eliminarDetalleventa(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'eliminarDetalleventa'");
+    public void eliminarDetalleVenta(Long detalleVentaId, Venta venta) {
+        DetalleVenta detalleVenta = findById(detalleVentaId);
+        if (venta.getId() != detalleVenta.getVenta().getId()) {
+            throw new BusinessException("No se puede eliminar el detalle producto de otro turno");
+        }
+        detalleVentaRepository.delete(detalleVenta);
     }
-
 }

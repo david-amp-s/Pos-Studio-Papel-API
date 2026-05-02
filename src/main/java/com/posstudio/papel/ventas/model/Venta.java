@@ -53,7 +53,6 @@ public class Venta {
     @Column(nullable = false)
     BigDecimal total;
 
-    BigDecimal descuento;
     @Column(nullable = false)
     LocalDateTime fecha;
 

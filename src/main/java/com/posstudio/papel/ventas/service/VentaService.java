@@ -2,6 +2,7 @@ package com.posstudio.papel.ventas.service;
 
 import java.util.List;
 
+import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.responsive.VentaResponsiveDTO;
 
 public interface VentaService {
@@ -16,9 +17,11 @@ public interface VentaService {
 
     // flujo
 
-    List<VentaResponsiveDTO> añadirDetalleventa(Long ventaId);
+    VentaResponsiveDTO añadirDetalleventa(Long ventaId, DetalleVentaRequestDTO data);
 
-    List<VentaResponsiveDTO> editarDetalleventa();
+    VentaResponsiveDTO editarDetalleventa(Long detalleVentaId, DetalleVentaRequestDTO data, Long ventaId);
 
-    List<VentaResponsiveDTO> eliminarDetalleVenta();
+    VentaResponsiveDTO eliminarDetalleVenta(Long ventaId, Long detalleVentaId);
+
+    VentaResponsiveDTO cerrarVenta();
 }

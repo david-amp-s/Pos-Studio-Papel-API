@@ -46,6 +46,8 @@ public class DetalleVenta {
     @Column(nullable = false)
     BigDecimal subtotal;
 
+    BigDecimal descuento;
+
     @PrePersist
     @PreUpdate
     public void calcularSubtotal() {

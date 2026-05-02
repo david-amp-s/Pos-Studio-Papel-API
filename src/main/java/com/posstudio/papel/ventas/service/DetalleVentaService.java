@@ -7,7 +7,7 @@ import com.posstudio.papel.ventas.model.Venta;
 public interface DetalleVentaService {
     DetalleVentaResponsiveDTO crearDetalleVenta(DetalleVentaRequestDTO data, Venta venta);
 
-    DetalleVentaResponsiveDTO editarDetalleVenta(DetalleVentaRequestDTO data, Long id);
+    DetalleVentaResponsiveDTO editarDetalleVenta(DetalleVentaRequestDTO data, Long detalleVentaId, Venta venta);
 
-    DetalleVentaRequestDTO eliminarDetalleventa(Long id);
+    void eliminarDetalleVenta(Long detalleVentaId, Venta venta);
 }
