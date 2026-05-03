@@ -50,10 +50,10 @@ public class VentaController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("añadir/{id}")
-    public ResponseEntity<ApiResponse<VentaResponsiveDTO>> añadirDetalleVenta(@PathVariable Long id,
+    @PostMapping("añadir/{ventaId}")
+    public ResponseEntity<ApiResponse<VentaResponsiveDTO>> añadirDetalleVenta(@PathVariable Long ventaId,
             @Valid @RequestBody DetalleVentaRequestDTO data) {
-        return ResponseEntity.ok(ApiResponse.ok(ventaService.añadirDetalleventa(id, data)));
+        return ResponseEntity.ok(ApiResponse.ok(ventaService.añadirDetalleventa(ventaId, data)));
     }
 
     @PutMapping("editar/{ventaId}/{detalleVentaId}")
