@@ -9,8 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.posstudio.papel.common.enums.EstadoTurno;
 import com.posstudio.papel.common.enums.EstadoVenta;
+import com.posstudio.papel.common.enums.TipoMovimientoInventario;
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
+import com.posstudio.papel.inventario.model.Producto;
+import com.posstudio.papel.inventario.service.ProductoService;
 import com.posstudio.papel.security.model.Usuario;
 import com.posstudio.papel.turnos.model.Turno;
 import com.posstudio.papel.turnos.repository.TurnoRepository;
@@ -35,6 +38,7 @@ public class VentaServiceImpl implements VentaService {
     private final TurnoRepository turnoRepository;
     private final DetalleVentaService detalleVentaService;
     private final PagoVentaService pagoVentaService;
+    private final ProductoService productoService;
 
     private VentaResponsiveDTO conversorDTO(Venta data) {
         // Convertir los detalles de venta
@@ -154,7 +158,12 @@ public class VentaServiceImpl implements VentaService {
             throw new BusinessException("No se puede cerrar una venta sin productos");
         }
         pagoVentaService.añadirPago(pago, venta);
+        venta.getDetalles()
+                .forEach(det -> productoService.ajustarStock(TipoMovimientoInventario.VENTA, det.getCantidad(),
+                        det.getProducto(), ventaId));
+
         venta.setEstado(EstadoVenta.CERRADA);
+        ventaRepository.save(venta);
         return conversorDTO(venta);
     }
 

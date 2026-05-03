@@ -1,6 +1,5 @@
 package com.posstudio.papel.ventas.service;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import com.posstudio.papel.ventas.dto.request.PagoVentaRequestDTO;
