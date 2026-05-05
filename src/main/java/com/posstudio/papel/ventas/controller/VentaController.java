@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.posstudio.papel.common.responsive.ApiResponse;
 import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
+import com.posstudio.papel.ventas.dto.request.EditarDetalleVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.request.PagoVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.responsive.VentaResponsiveDTO;
 import com.posstudio.papel.ventas.service.VentaService;
@@ -58,7 +59,7 @@ public class VentaController {
 
     @PutMapping("editar/{ventaId}/{detalleVentaId}")
     public ResponseEntity<ApiResponse<VentaResponsiveDTO>> editarDetalleVenta(@PathVariable Long detalleVentaId,
-            @Valid @RequestBody DetalleVentaRequestDTO data,
+            @Valid @RequestBody EditarDetalleVentaRequestDTO data,
             @PathVariable Long ventaId) {
         return ResponseEntity.ok(ApiResponse.ok(ventaService.editarDetalleventa(detalleVentaId, data, ventaId)));
     }

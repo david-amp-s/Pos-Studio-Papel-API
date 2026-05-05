@@ -10,6 +10,7 @@ import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.inventario.model.Producto;
 import com.posstudio.papel.inventario.service.ProductoService;
 import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
+import com.posstudio.papel.ventas.dto.request.EditarDetalleVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.responsive.DetalleVentaResponsiveDTO;
 import com.posstudio.papel.ventas.model.DetalleVenta;
 import com.posstudio.papel.ventas.model.Venta;
@@ -35,7 +36,8 @@ public class DetalleVentaServiceImpl implements DetalleVentaService {
         Producto producto = productoService.findByid(data.productoId());
         DetalleVenta verificarProducto = detalleVentaRepository.findByProductoAndVenta(producto, venta).orElse(null);
         if (verificarProducto != null) {
-            throw new BusinessException("Ya hay un detalle venta con este producto en la misma venta");
+            verificarProducto.setCantidad(verificarProducto.getCantidad() + 1);
+            return conversorDTO(verificarProducto);
         }
 
         DetalleVenta detalleVenta = DetalleVenta.builder()
@@ -50,7 +52,8 @@ public class DetalleVentaServiceImpl implements DetalleVentaService {
     }
 
     @Override
-    public DetalleVentaResponsiveDTO editarDetalleVenta(DetalleVentaRequestDTO data, Long detalleVentaId, Venta venta) {
+    public DetalleVentaResponsiveDTO editarDetalleVenta(EditarDetalleVentaRequestDTO data, Long detalleVentaId,
+            Venta venta) {
 
         DetalleVenta detalleVenta = findById(detalleVentaId);
         if (venta.getId() != detalleVenta.getVenta().getId()) {
@@ -74,5 +77,38 @@ public class DetalleVentaServiceImpl implements DetalleVentaService {
             throw new BusinessException("No se puede eliminar el detalle producto de otro turno");
         }
         detalleVentaRepository.delete(detalleVenta);
+    }
+
+    @Override
+    public DetalleVentaResponsiveDTO añadirDetalleVentaEnUno(Venta venta, Long detalleVentaId) {
+
+        DetalleVenta detalleVenta = findById(detalleVentaId);
+        if (venta.getId() != detalleVenta.getVenta().getId()) {
+            throw new BusinessException("No se puede modificar el detalle producto de otro turno");
+        }
+        detalleVenta.setCantidad(detalleVenta.getCantidad() + 1);
+        detalleVentaRepository.save(detalleVenta);
+        return conversorDTO(detalleVenta);
+    }
+
+    @Override
+    public DetalleVentaResponsiveDTO eliminarDetalleVentaEnUno(Venta venta, Long detalleVentaId) {
+        DetalleVenta detalleVenta = findById(detalleVentaId);
+        if (venta.getId() != detalleVenta.getVenta().getId()) {
+            throw new BusinessException("No se puede modificar el detalle producto de otro turno");
+        }
+
+        if (detalleVenta.getCantidad() > 1) {
+            // Si hay más de 1, solo reducimos la cantidad
+            detalleVenta.setCantidad(detalleVenta.getCantidad() - 1);
+            detalleVentaRepository.save(detalleVenta);
+            return conversorDTO(detalleVenta);
+        } else if (detalleVenta.getCantidad() == 1) {
+            // Si solo hay 1, eliminamos el detalle completo
+            detalleVentaRepository.delete(detalleVenta);
+            return null; // o lanzar una excepción indicando que se eliminó
+        } else {
+            throw new BusinessException("La cantidad no puede ser menor a 1");
+        }
     }
 }

@@ -12,12 +12,12 @@ import com.posstudio.papel.common.enums.EstadoVenta;
 import com.posstudio.papel.common.enums.TipoMovimientoInventario;
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
-import com.posstudio.papel.inventario.model.Producto;
 import com.posstudio.papel.inventario.service.ProductoService;
 import com.posstudio.papel.security.model.Usuario;
 import com.posstudio.papel.turnos.model.Turno;
 import com.posstudio.papel.turnos.repository.TurnoRepository;
 import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
+import com.posstudio.papel.ventas.dto.request.EditarDetalleVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.request.PagoVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.responsive.DetalleVentaResponsiveDTO;
 import com.posstudio.papel.ventas.dto.responsive.PagoVentaResponsiveDTO;
@@ -138,7 +138,7 @@ public class VentaServiceImpl implements VentaService {
     }
 
     @Override
-    public VentaResponsiveDTO editarDetalleventa(Long detalleVentaId, DetalleVentaRequestDTO data, Long ventaId) {
+    public VentaResponsiveDTO editarDetalleventa(Long detalleVentaId, EditarDetalleVentaRequestDTO data, Long ventaId) {
         Venta venta = findById(ventaId);
         if (venta.getEstado() != EstadoVenta.ABIERTA) {
             throw new BusinessException("Para añadir Detalle venta debe de estar abierta la venta");
@@ -175,6 +175,28 @@ public class VentaServiceImpl implements VentaService {
         }
 
         detalleVentaService.eliminarDetalleVenta(detalleVentaId, venta);
+        venta.recalcularTotal();
+        return conversorDTO(venta);
+    }
+
+    @Override
+    public VentaResponsiveDTO añadirDetalleVentaEnUno(Long ventaId, Long detalleVentaId) {
+        Venta venta = findById(ventaId);
+        if (venta.getEstado() != EstadoVenta.ABIERTA) {
+            throw new BusinessException("Para añadir detalle venta debe de estar abierta");
+        }
+        detalleVentaService.añadirDetalleVentaEnUno(venta, detalleVentaId);
+        venta.recalcularTotal();
+        return conversorDTO(venta);
+    }
+
+    @Override
+    public VentaResponsiveDTO eliminarDetalleVentaEnUno(Long ventaId, Long detalleVentaId) {
+        Venta venta = findById(ventaId);
+        if (venta.getEstado() != EstadoVenta.ABIERTA) {
+            throw new BusinessException("Para añadir detalle venta debe de estar abierta");
+        }
+        detalleVentaService.eliminarDetalleVentaEnUno(venta, detalleVentaId);
         venta.recalcularTotal();
         return conversorDTO(venta);
     }

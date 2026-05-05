@@ -2,12 +2,19 @@ package com.posstudio.papel.inventario.service.impl;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.posstudio.papel.common.enums.TipoMovimientoInventario;
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
+import com.posstudio.papel.common.responsive.PageResponseDTO;
+import com.posstudio.papel.inventario.dto.filter.ProductoFiltroDTO;
 import com.posstudio.papel.inventario.dto.request.MovimientoInventarioRequestDTO;
 import com.posstudio.papel.inventario.dto.request.ProductoRequestDTO;
 import com.posstudio.papel.inventario.dto.responsive.ProductoResponsiveDTO;
@@ -15,6 +22,7 @@ import com.posstudio.papel.inventario.model.Categoria;
 import com.posstudio.papel.inventario.model.Producto;
 import com.posstudio.papel.inventario.model.Ubicacion;
 import com.posstudio.papel.inventario.repository.ProductoRepository;
+import com.posstudio.papel.inventario.repository.ProductoSpecification;
 import com.posstudio.papel.inventario.service.CategoriaService;
 import com.posstudio.papel.inventario.service.MovimientoInventarioService;
 import com.posstudio.papel.inventario.service.ProductoService;
@@ -58,8 +66,15 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public List<ProductoResponsiveDTO> listarProducto() {
-        return productoRepository.findByActivo(true).stream().map(this::conversorDTO).toList();
+    public PageResponseDTO<ProductoResponsiveDTO> listarProducto(ProductoFiltroDTO filtro, int pagina, int tamanio) {
+        Pageable pageable = PageRequest.of(pagina, tamanio, Sort.by("nombre").ascending());
+        Specification<Producto> spec = ProductoSpecification.conFiltros(filtro);
+
+        Page<ProductoResponsiveDTO> resultado = productoRepository
+                .findAll(spec, pageable)
+                .map(this::conversorDTO); // map directo sobre el Page
+
+        return PageResponseDTO.from(resultado);
     }
 
     @Override
