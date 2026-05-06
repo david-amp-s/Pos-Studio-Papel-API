@@ -46,6 +46,7 @@ public class VentaServiceImpl implements VentaService {
                 ? data.getDetalles().stream()
                         .map(detalle -> new DetalleVentaResponsiveDTO(
                                 detalle.getId(),
+                                detalle.getProducto().getId(),
                                 detalle.getProducto().getNombre(),
                                 detalle.getCantidad(),
                                 detalle.getPrecioUnitario(),

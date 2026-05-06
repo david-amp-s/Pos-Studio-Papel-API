@@ -27,7 +27,8 @@ public class DetalleVentaServiceImpl implements DetalleVentaService {
     private final ProductoService productoService;
 
     private DetalleVentaResponsiveDTO conversorDTO(DetalleVenta data) {
-        return new DetalleVentaResponsiveDTO(data.getId(), data.getProducto().getNombre(), data.getCantidad(),
+        return new DetalleVentaResponsiveDTO(data.getId(), data.getId(), data.getProducto().getNombre(),
+                data.getCantidad(),
                 data.getPrecioUnitario(), data.getSubtotal(), data.getDescuento());
     }
 
