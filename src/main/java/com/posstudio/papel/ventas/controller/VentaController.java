@@ -77,4 +77,16 @@ public class VentaController {
         return ResponseEntity.ok(ApiResponse.ok(ventaService.cerrarVenta(ventaId, data)));
     }
 
+    @PutMapping("añadir_en_uno/{ventaId}/{detalleVentaId}")
+    public ResponseEntity<ApiResponse<VentaResponsiveDTO>> añadirDetalleVentaEnUno(@PathVariable Long ventaId,
+            @PathVariable Long detalleVentaId) {
+        return ResponseEntity.ok(ApiResponse.ok(ventaService.añadirDetalleVentaEnUno(ventaId, detalleVentaId)));
+    }
+
+    @PutMapping("eliminar_en_uno/{ventaId}/{detalleVentaId}")
+    public ResponseEntity<ApiResponse<VentaResponsiveDTO>> eliminarDetalleVentaEnUno(@PathVariable Long ventaId,
+            @PathVariable Long detalleVentaId) {
+        return ResponseEntity.ok(ApiResponse.ok(ventaService.eliminarDetalleVentaEnUno(ventaId, detalleVentaId)));
+    }
+
 }
