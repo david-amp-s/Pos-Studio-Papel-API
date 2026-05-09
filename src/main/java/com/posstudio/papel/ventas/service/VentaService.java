@@ -17,17 +17,6 @@ public interface VentaService {
 
     void cancelarVenta(Long ventaId);
 
-    // flujo
-
-    VentaResponsiveDTO añadirDetalleventa(Long ventaId, DetalleVentaRequestDTO data);
-
-    VentaResponsiveDTO editarDetalleventa(Long detalleVentaId, EditarDetalleVentaRequestDTO data, Long ventaId);
-
-    VentaResponsiveDTO eliminarDetalleVenta(Long ventaId, Long detalleVentaId);
-
     VentaResponsiveDTO cerrarVenta(Long ventaId, PagoVentaRequestDTO pago);
 
-    VentaResponsiveDTO añadirDetalleVentaEnUno(Long ventaId, Long detalleVentaId);
-
-    VentaResponsiveDTO eliminarDetalleVentaEnUno(Long ventaId, Long detalleVentaId);
 }

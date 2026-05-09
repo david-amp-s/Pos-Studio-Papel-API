@@ -3,16 +3,15 @@ package com.posstudio.papel.ventas.service;
 import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.request.EditarDetalleVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.responsive.DetalleVentaResponsiveDTO;
-import com.posstudio.papel.ventas.model.Venta;
 
 public interface DetalleVentaService {
-    DetalleVentaResponsiveDTO crearDetalleVenta(DetalleVentaRequestDTO data, Venta venta);
+    DetalleVentaResponsiveDTO crearDetalleVenta(DetalleVentaRequestDTO data, Long ventaId);
 
-    DetalleVentaResponsiveDTO editarDetalleVenta(EditarDetalleVentaRequestDTO data, Long detalleVentaId, Venta venta);
+    DetalleVentaResponsiveDTO editarDetalleVenta(EditarDetalleVentaRequestDTO data, Long detalleVentaId, Long ventaId);
 
-    void eliminarDetalleVenta(Long detalleVentaId, Venta venta);
+    void eliminarDetalleVenta(Long detalleVentaId, Long ventaId);
 
-    DetalleVentaResponsiveDTO añadirDetalleVentaEnUno(Venta venta, Long detalleVentaId);
+    DetalleVentaResponsiveDTO añadirDetalleVentaEnUno(Long ventaId, Long detalleVentaId);
 
-    DetalleVentaResponsiveDTO eliminarDetalleVentaEnUno(Venta venta, Long detalleVentaId);
+    DetalleVentaResponsiveDTO eliminarDetalleVentaEnUno(Long ventaId, Long detalleVentaId);
 }
