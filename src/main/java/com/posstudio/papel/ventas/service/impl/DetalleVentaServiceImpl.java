@@ -1,6 +1,7 @@
 package com.posstudio.papel.ventas.service.impl;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -140,5 +141,12 @@ public class DetalleVentaServiceImpl implements DetalleVentaService {
         BigDecimal total = detalleVentaRepository.sumSubtotalByVentaId(venta.getId());
         venta.setTotal(total);
         ventaRepository.save(venta);
+    }
+
+    @Override
+    public List<DetalleVentaResponsiveDTO> listarDetalleVentaEnVenta(Long ventaId) {
+        Venta venta = ventaRepository.findById(ventaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada", ventaId.toString()));
+        return detalleVentaRepository.findByVenta(venta).stream().map(this::conversorDTO).toList();
     }
 }

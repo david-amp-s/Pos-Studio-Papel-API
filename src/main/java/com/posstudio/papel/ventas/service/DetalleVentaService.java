@@ -1,5 +1,7 @@
 package com.posstudio.papel.ventas.service;
 
+import java.util.List;
+
 import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.request.EditarDetalleVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.responsive.DetalleVentaResponsiveDTO;
@@ -14,4 +16,6 @@ public interface DetalleVentaService {
     DetalleVentaResponsiveDTO añadirDetalleVentaEnUno(Long ventaId, Long detalleVentaId);
 
     DetalleVentaResponsiveDTO eliminarDetalleVentaEnUno(Long ventaId, Long detalleVentaId);
+
+    List<DetalleVentaResponsiveDTO> listarDetalleVentaEnVenta(Long ventaId);
 }

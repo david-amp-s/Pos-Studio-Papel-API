@@ -1,5 +1,7 @@
 package com.posstudio.papel.ventas.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/detalle_venta")
@@ -26,6 +30,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 public class DetalleVentaController {
     private final DetalleVentaService detalleVentaService;
+
+    @GetMapping("/{ventaId}")
+    public ResponseEntity<ApiResponse<List<DetalleVentaResponsiveDTO>>> obtenerDetalleVentaEnVenta(
+            @PathVariable Long ventaId) {
+        return ResponseEntity.ok(ApiResponse.ok(detalleVentaService.listarDetalleVentaEnVenta(ventaId)));
+    }
 
     @PostMapping("{ventaId}")
     public ResponseEntity<ApiResponse<DetalleVentaResponsiveDTO>> añadirDetalleVenta(
@@ -48,13 +58,13 @@ public class DetalleVentaController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/accion/add/{ventaId}/{detalleVentaId}")
+    @PutMapping("/accion/add/{ventaId}/{detalleVentaId}")
     public ResponseEntity<ApiResponse<DetalleVentaResponsiveDTO>> añadirDetalleVentaEnUno(@PathVariable Long ventaId,
             @PathVariable Long detalleVentaId) {
         return ResponseEntity.ok(ApiResponse.ok(detalleVentaService.añadirDetalleVentaEnUno(ventaId, detalleVentaId)));
     }
 
-    @PostMapping("/accion/del/{ventaId}/{detalleVentaId}")
+    @PutMapping("/accion/del/{ventaId}/{detalleVentaId}")
     public ResponseEntity<ApiResponse<DetalleVentaResponsiveDTO>> eliminarDetalleVentaEnUno(@PathVariable Long ventaId,
             @PathVariable Long detalleVentaId) {
         return ResponseEntity
