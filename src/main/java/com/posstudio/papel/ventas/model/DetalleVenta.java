@@ -51,8 +51,15 @@ public class DetalleVenta {
     @PrePersist
     @PreUpdate
     public void calcularSubtotal() {
-        if (cantidad != null && precioUnitario != null) {
-            this.subtotal = precioUnitario.multiply(BigDecimal.valueOf(cantidad));
+        if (cantidad != null) {
+            // Si existe descuento y es diferente de 0, usar el descuento como precio
+            if (descuento != null && descuento.compareTo(BigDecimal.ZERO) != 0) {
+                // El descuento ES el precio final del producto
+                this.subtotal = descuento.multiply(BigDecimal.valueOf(cantidad));
+            } else if (precioUnitario != null) {
+                // Si no hay descuento, usar el precio unitario original
+                this.subtotal = precioUnitario.multiply(BigDecimal.valueOf(cantidad));
+            }
         }
     }
 }

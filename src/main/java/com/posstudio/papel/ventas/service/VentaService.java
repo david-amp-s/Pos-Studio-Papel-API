@@ -2,8 +2,6 @@ package com.posstudio.papel.ventas.service;
 
 import java.util.List;
 
-import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
-import com.posstudio.papel.ventas.dto.request.EditarDetalleVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.request.PagoVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.responsive.VentaResponsiveDTO;
 
