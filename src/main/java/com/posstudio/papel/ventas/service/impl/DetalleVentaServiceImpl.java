@@ -31,7 +31,7 @@ public class DetalleVentaServiceImpl implements DetalleVentaService {
     private final VentaRepository ventaRepository;
 
     private DetalleVentaResponsiveDTO conversorDTO(DetalleVenta data) {
-        return new DetalleVentaResponsiveDTO(data.getId(), data.getId(), data.getProducto().getNombre(),
+        return new DetalleVentaResponsiveDTO(data.getId(), data.getProducto().getId(), data.getProducto().getNombre(),
                 data.getCantidad(),
                 data.getPrecioUnitario(), data.getSubtotal(), data.getDescuento());
     }
@@ -81,7 +81,7 @@ public class DetalleVentaServiceImpl implements DetalleVentaService {
     }
 
     @Override
-    public void eliminarDetalleVenta(Long detalleVentaId, Long ventaId) {
+    public void eliminarDetalleVenta(Long ventaId, Long detalleVentaId) {
         Venta venta = validarVenta(ventaId);
         DetalleVenta detalleVenta = findById(detalleVentaId);
         if (!venta.getId().equals(detalleVenta.getVenta().getId())) {

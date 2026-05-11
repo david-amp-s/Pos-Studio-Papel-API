@@ -11,7 +11,7 @@ public interface DetalleVentaService {
 
     DetalleVentaResponsiveDTO editarDetalleVenta(EditarDetalleVentaRequestDTO data, Long detalleVentaId, Long ventaId);
 
-    void eliminarDetalleVenta(Long detalleVentaId, Long ventaId);
+    void eliminarDetalleVenta(Long ventaId, Long detalleVentaId);
 
     DetalleVentaResponsiveDTO añadirDetalleVentaEnUno(Long ventaId, Long detalleVentaId);
 

@@ -52,7 +52,8 @@ public class DetalleVentaController {
     }
 
     @DeleteMapping("/{ventaId}/{detalleVentaId}")
-    public ResponseEntity<Void> eliminarDetalleVenta(@PathVariable Long ventaId,
+    public ResponseEntity<Void> eliminarDetalleVenta(
+            @PathVariable Long ventaId,
             @PathVariable Long detalleVentaId) {
         detalleVentaService.eliminarDetalleVenta(ventaId, detalleVentaId);
         return ResponseEntity.noContent().build();
