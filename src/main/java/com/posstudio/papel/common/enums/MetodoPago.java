@@ -2,6 +2,6 @@ package com.posstudio.papel.common.enums;
 
 public enum MetodoPago {
     EFECTIVO,
-    TRANSACCION,
+    TRANSFERENCIA,
     TARJETA
 }
