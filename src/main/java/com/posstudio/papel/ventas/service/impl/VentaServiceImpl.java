@@ -129,7 +129,8 @@ public class VentaServiceImpl implements VentaService {
 
         @Override
         public VentaResponsiveDTO cerrarVenta(Long ventaId, PagoVentaRequestDTO pago) {
-                Venta venta = findById(ventaId);
+                Venta venta = ventaRepository.findByIdConDetalles(ventaId).orElseThrow(
+                                () -> new ResourceNotFoundException("venta no encontrada", ventaId.toString()));
                 if (venta.getEstado() != EstadoVenta.ABIERTA) {
                         throw new BusinessException("Para cerrar la venta el estado debe de estar abierto");
                 }

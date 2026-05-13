@@ -71,12 +71,5 @@ public class Venta {
 
     }
 
-    public void recalcularTotal() {
-        if (detalles != null && !detalles.isEmpty()) {
-            this.total = detalles.stream().map(DetalleVenta::getSubtotal)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-        } else {
-            this.total = BigDecimal.ZERO;
-        }
-    }
+
 }

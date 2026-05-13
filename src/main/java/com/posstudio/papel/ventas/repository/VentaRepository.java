@@ -24,4 +24,14 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT v FROM Venta v WHERE v.id = :id")
     Optional<Venta> findByIdWithLock(@Param("id") Long id);
+
+    @Query("""
+    SELECT v FROM Venta v
+    LEFT JOIN FETCH v.detalles d
+    LEFT JOIN FETCH d.producto
+    LEFT JOIN FETCH v.usuario
+    LEFT JOIN FETCH v.turno
+    WHERE v.id = :id
+""")
+Optional<Venta> findByIdConDetalles(@Param("id") Long id);
 }
