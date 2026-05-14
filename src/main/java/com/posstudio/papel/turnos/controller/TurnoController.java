@@ -1,5 +1,6 @@
 package com.posstudio.papel.turnos.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -34,9 +35,9 @@ public class TurnoController {
     }
 
     @PutMapping("cerrar")
-    public ResponseEntity<ApiResponse<TurnoResponsiveDTO>> cerrarTurno() {
+    public ResponseEntity<ApiResponse<TurnoResponsiveDTO>> cerrarTurno(@RequestBody BigDecimal dineroCaja) {
 
-        return ResponseEntity.ok(ApiResponse.ok(turnoService.cerrarTurno()));
+        return ResponseEntity.ok(ApiResponse.ok(turnoService.cerrarTurno(dineroCaja)));
     }
 
     @PutMapping("editar")

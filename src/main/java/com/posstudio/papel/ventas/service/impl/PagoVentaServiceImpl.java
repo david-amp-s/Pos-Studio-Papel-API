@@ -6,13 +6,16 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.posstudio.papel.common.enums.MetodoPago;
 import com.posstudio.papel.common.exception.BusinessException;
+import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.ventas.dto.request.MetodoPagoDTO;
 import com.posstudio.papel.ventas.dto.request.PagoVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.responsive.PagoVentaResponsiveDTO;
 import com.posstudio.papel.ventas.model.Pagoventa;
 import com.posstudio.papel.ventas.model.Venta;
 import com.posstudio.papel.ventas.repository.PagoVentaRepository;
+import com.posstudio.papel.ventas.repository.VentaRepository;
 import com.posstudio.papel.ventas.service.PagoVentaService;
 
 import lombok.RequiredArgsConstructor;
@@ -51,9 +54,27 @@ public class PagoVentaServiceImpl implements PagoVentaService {
     }
 
     @Override
-    public PagoVentaResponsiveDTO listarPagos(Venta venta) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'listarPagos'");
+    public BigDecimal calcularTotalPagosEnVenta(Long turnoId) {
+        return pagoVentaRepository.findByVenta_TurnoId(turnoId).stream().map(Pagoventa::getMonto)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public BigDecimal calcularPagosEnEfectivo(Long turnoId) {
+        return pagoVentaRepository.findByVenta_TurnoIdAndMetodo(turnoId, MetodoPago.EFECTIVO).stream()
+                .map(Pagoventa::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public BigDecimal calcularPagosEnTransf(Long turnoId) {
+        return pagoVentaRepository.findByVenta_TurnoIdAndMetodo(turnoId, MetodoPago.TRANSFERENCIA).stream()
+                .map(Pagoventa::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public BigDecimal calcularPagosEnTarjeta(Long turnoId) {
+        return pagoVentaRepository.findByVenta_TurnoIdAndMetodo(turnoId, MetodoPago.TARJETA).stream()
+                .map(Pagoventa::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.posstudio.papel.turnos.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.posstudio.papel.turnos.dto.request.TurnoEmpleadoRequest;
@@ -12,7 +13,7 @@ public interface TurnoService {
 
     TurnoResponsiveDTO editarTurno(TurnoEmpleadoRequest data);
 
-    TurnoResponsiveDTO cerrarTurno();
+    TurnoResponsiveDTO cerrarTurno(BigDecimal dineroCaja);
 
     Turno buscarTurnoId(Long id);
 

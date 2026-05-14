@@ -1,5 +1,6 @@
 package com.posstudio.papel.ventas.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.posstudio.papel.ventas.dto.request.PagoVentaRequestDTO;
@@ -9,6 +10,12 @@ import com.posstudio.papel.ventas.model.Venta;
 public interface PagoVentaService {
     List<PagoVentaResponsiveDTO> añadirPago(PagoVentaRequestDTO data, Venta venta);
 
-    PagoVentaResponsiveDTO listarPagos(Venta venta);
+    BigDecimal calcularTotalPagosEnVenta(Long turnoId);
+
+    BigDecimal calcularPagosEnEfectivo(Long turnoId);
+
+    BigDecimal calcularPagosEnTransf(Long turnoId);
+
+    BigDecimal calcularPagosEnTarjeta(Long turnoId);
 
 }

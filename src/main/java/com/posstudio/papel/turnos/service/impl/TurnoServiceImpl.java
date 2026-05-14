@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.posstudio.papel.common.enums.EstadoTurno;
+import com.posstudio.papel.common.enums.EstadoVenta;
 import com.posstudio.papel.common.enums.TipoAccionTurno;
 import com.posstudio.papel.common.enums.TipoTurno;
 import com.posstudio.papel.common.exception.BusinessException;
@@ -21,6 +22,11 @@ import com.posstudio.papel.turnos.model.Turno;
 import com.posstudio.papel.turnos.repository.TurnoRepository;
 import com.posstudio.papel.turnos.service.TurnoEmpleadoService;
 import com.posstudio.papel.turnos.service.TurnoService;
+import com.posstudio.papel.ventas.model.DetalleVenta;
+import com.posstudio.papel.ventas.model.Venta;
+import com.posstudio.papel.ventas.repository.DetalleVentaRepository;
+import com.posstudio.papel.ventas.repository.VentaRepository;
+import com.posstudio.papel.ventas.service.PagoVentaService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +36,8 @@ import lombok.RequiredArgsConstructor;
 public class TurnoServiceImpl implements TurnoService {
     private final TurnoRepository turnoRepository;
     private final TurnoEmpleadoService turnoEmpleadoService;
+    private final VentaRepository ventaRepository;
+    private final PagoVentaService pagoVentaService;
 
     private TurnoResponsiveDTO conversorDTO(Turno turno) {
         return new TurnoResponsiveDTO(turno.getId(), turno.getFecha(), turno.getTipoTurno(), turno.getEstadoTurno(),
@@ -124,14 +132,10 @@ public class TurnoServiceImpl implements TurnoService {
 
     @Override
     @Transactional
-    public TurnoResponsiveDTO cerrarTurno() {
+    public TurnoResponsiveDTO cerrarTurno(BigDecimal dineroCaja) {
         // validar que el turno este abierto
         Turno turno = turnoRepository.findByEstadoTurno(EstadoTurno.ABIERTO)
                 .orElseThrow(() -> new BusinessException("No hay turno activo"));
-
-        if (turno.getEstadoTurno() != EstadoTurno.ABIERTO) {
-            throw new BusinessException("El turno ya se encuentra cerrado");
-        }
 
         // validar que haya al menos un empleado en turno
         List<Empleado> empleadosActivos = turnoEmpleadoService.listarEmpleadosEnTurno(turno.getId());
@@ -139,18 +143,46 @@ public class TurnoServiceImpl implements TurnoService {
         if (empleadosActivos.isEmpty()) {
             throw new BusinessException("No se puede cerrar un turno sin empleados");
         }
-        // salida de empleados
-        turnoEmpleadoService.registarCierreTurno(turno);
+
         // en modulo de ventas no puede haber una venta pendiente
+        List<Venta> ventasActivas = ventaRepository.findByEstado(EstadoVenta.ABIERTA);
+        List<Venta> ventasActivasConDetalleVenta = ventasActivas.stream().filter(v -> !v.getDetalles().isEmpty())
+                .toList();
+        if (!ventasActivasConDetalleVenta.isEmpty()) {
+            throw new BusinessException("No se puede cerrar un turno con ventas pendientes");
+        }
+        if (!ventasActivas.isEmpty()) {
+            ventaRepository.deleteAll(ventasActivas);
+        }
         // registrar dinero cierre (Donde si dinero cierre <= 0 y lo traeremos del
+        BigDecimal totalCierre = pagoVentaService.calcularTotalPagosEnVenta(turno.getId());
+        if (totalCierre.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("No se peude cerrar un turno sin ventas");
+        }
+
+        BigDecimal efectivoCierre = pagoVentaService.calcularPagosEnEfectivo(turno.getId());
+        if (dineroCaja.subtract(efectivoCierre).compareTo(BigDecimal.ZERO) != 0) {
+            if (dineroCaja.subtract(efectivoCierre).compareTo(BigDecimal.ZERO) < 0) {
+                // aca añadimos una advertencia al administrador que hubo desfalco de caja
+
+            } else {
+                // aca añadimos una advertencia al administrador que hubo incoherencia de caja
+            }
+
+        }
+        BigDecimal diferencia = totalCierre.subtract(turno.getDineroApertura());
+
         // modulo de ventas ) registraremos un log pero todavia no esta en el mvp
 
         turno.setEstadoTurno(EstadoTurno.CERRADO);
-        turno.setDineroCierre(BigDecimal.ZERO);
-        turno.setDiferencia(BigDecimal.ZERO);
+        turno.setDineroCierre(totalCierre);
+        turno.setDiferencia(diferencia);
         turno.setFechaCierre(LocalDateTime.now());
+        // salida de empleados
+        turnoEmpleadoService.registarCierreTurno(turno);
         // cerrar turno
         turnoRepository.save(turno);
+
         return conversorDTO(turno);
     }
 
