@@ -7,7 +7,7 @@ inventario(Ya hecho)
   ubicacion_producto
   producto
   movimiento_inventario
-  producto_pendiente
+  producto_pendiente 
 
 
 turnos()
@@ -21,4 +21,9 @@ ventas()
   detalle_venta
   pago_venta
   factura
-
+------------------
+faltante()
+añadir servicios en producto
+poder crear producto pendiente desde venta.
+poder generar ventas con productos pendientes
+generar ticket

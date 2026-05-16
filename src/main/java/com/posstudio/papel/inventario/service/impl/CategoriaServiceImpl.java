@@ -28,7 +28,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     public CategoriaResponsiveDTO crearCategoria(CategoriaResquestDTO data) {
-        if (categoriaRepository.findByNombre(data.nombre()).isPresent()) {
+        if (categoriaRepository.findByNombre(StringUtils.normalize(data.nombre())).isPresent()) {
             throw new BusinessException("Categoria ya existe con ese nombre", 409);
         }
         Categoria categoria = Categoria.builder()

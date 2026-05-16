@@ -14,6 +14,7 @@ import com.posstudio.papel.common.enums.TipoAccionTurno;
 import com.posstudio.papel.common.enums.TipoTurno;
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
+import com.posstudio.papel.turnos.dto.request.PagoCierreTurnoDTO;
 import com.posstudio.papel.turnos.dto.request.TurnoEmpleadoRequest;
 import com.posstudio.papel.turnos.dto.responsive.EmpleadoResponsiveDTO;
 import com.posstudio.papel.turnos.dto.responsive.TurnoResponsiveDTO;
@@ -22,9 +23,7 @@ import com.posstudio.papel.turnos.model.Turno;
 import com.posstudio.papel.turnos.repository.TurnoRepository;
 import com.posstudio.papel.turnos.service.TurnoEmpleadoService;
 import com.posstudio.papel.turnos.service.TurnoService;
-import com.posstudio.papel.ventas.model.DetalleVenta;
 import com.posstudio.papel.ventas.model.Venta;
-import com.posstudio.papel.ventas.repository.DetalleVentaRepository;
 import com.posstudio.papel.ventas.repository.VentaRepository;
 import com.posstudio.papel.ventas.service.PagoVentaService;
 
@@ -132,7 +131,7 @@ public class TurnoServiceImpl implements TurnoService {
 
     @Override
     @Transactional
-    public TurnoResponsiveDTO cerrarTurno(BigDecimal dineroCaja) {
+    public TurnoResponsiveDTO cerrarTurno(PagoCierreTurnoDTO data) {
         // validar que el turno este abierto
         Turno turno = turnoRepository.findByEstadoTurno(EstadoTurno.ABIERTO)
                 .orElseThrow(() -> new BusinessException("No hay turno activo"));
@@ -159,10 +158,11 @@ public class TurnoServiceImpl implements TurnoService {
         if (totalCierre.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException("No se peude cerrar un turno sin ventas");
         }
+        BigDecimal efectivoCierre = pagoVentaService.calcularPagosEnEfectivo(turno.getId())
+                .add(turno.getDineroApertura());
 
-        BigDecimal efectivoCierre = pagoVentaService.calcularPagosEnEfectivo(turno.getId());
-        if (dineroCaja.subtract(efectivoCierre).compareTo(BigDecimal.ZERO) != 0) {
-            if (dineroCaja.subtract(efectivoCierre).compareTo(BigDecimal.ZERO) < 0) {
+        if (data.totalCaja().subtract(efectivoCierre).compareTo(BigDecimal.ZERO) != 0) {
+            if (data.totalCaja().subtract(efectivoCierre).compareTo(BigDecimal.ZERO) < 0) {
                 // aca añadimos una advertencia al administrador que hubo desfalco de caja
 
             } else {

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.posstudio.papel.common.responsive.ApiResponse;
+import com.posstudio.papel.turnos.dto.request.PagoCierreTurnoDTO;
 import com.posstudio.papel.turnos.dto.request.TurnoEmpleadoRequest;
 import com.posstudio.papel.turnos.dto.responsive.EmpleadoResponsiveDTO;
 import com.posstudio.papel.turnos.dto.responsive.TurnoResponsiveDTO;
@@ -35,9 +36,9 @@ public class TurnoController {
     }
 
     @PutMapping("cerrar")
-    public ResponseEntity<ApiResponse<TurnoResponsiveDTO>> cerrarTurno(@RequestBody BigDecimal dineroCaja) {
+    public ResponseEntity<ApiResponse<TurnoResponsiveDTO>> cerrarTurno(@RequestBody PagoCierreTurnoDTO data) {
 
-        return ResponseEntity.ok(ApiResponse.ok(turnoService.cerrarTurno(dineroCaja)));
+        return ResponseEntity.ok(ApiResponse.ok(turnoService.cerrarTurno(data)));
     }
 
     @PutMapping("editar")

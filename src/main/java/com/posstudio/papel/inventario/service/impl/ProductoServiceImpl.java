@@ -1,7 +1,5 @@
 package com.posstudio.papel.inventario.service.impl;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,12 +9,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.posstudio.papel.common.enums.TipoMovimientoInventario;
+import com.posstudio.papel.common.enums.TipoProducto;
+import com.posstudio.papel.common.enums.UnidadNegocio;
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.common.responsive.PageResponseDTO;
 import com.posstudio.papel.inventario.dto.filter.ProductoFiltroDTO;
 import com.posstudio.papel.inventario.dto.request.MovimientoInventarioRequestDTO;
 import com.posstudio.papel.inventario.dto.request.ProductoRequestDTO;
+import com.posstudio.papel.inventario.dto.request.ProductoServicioRequestDTO;
 import com.posstudio.papel.inventario.dto.responsive.ProductoResponsiveDTO;
 import com.posstudio.papel.inventario.model.Categoria;
 import com.posstudio.papel.inventario.model.Producto;
@@ -41,12 +42,16 @@ public class ProductoServiceImpl implements ProductoService {
 
     private ProductoResponsiveDTO conversorDTO(Producto producto) {
         return new ProductoResponsiveDTO(producto.getId(), producto.getNombre(), producto.getCodigoDeBarras(),
-                producto.getPrecio(), producto.getStock(), producto.getCategoria().getNombre(),
-                producto.getUbicacion().getCodigo(), producto.getUnidadNegocio().name());
+                producto.getPrecio(), producto.getTipoProducto(), producto.getStock(),
+                producto.getCategoria().getNombre(),
+                producto.getUbicacion().getCodigo(), producto.getUnidadNegocio().name(), producto.getFavorito());
     }
 
     @Override
     public ProductoResponsiveDTO crearProducto(ProductoRequestDTO data) {
+        if (!data.tipoProducto().equals(TipoProducto.FISICO)) {
+            throw new BusinessException("No se puede crear un producto fisico como servicio");
+        }
         validarProductoNoExiste(data.nombre());
         Categoria categoria = categoriaService.findByNombre(data.categoria());
         Ubicacion ubicacion = ubicacionService.findByCodigo(data.ubicacion());
@@ -58,11 +63,33 @@ public class ProductoServiceImpl implements ProductoService {
                 .stock(0)
                 .categoria(categoria)
                 .ubicacion(ubicacion)
+                .tipoProducto(data.tipoProducto())
                 .unidadNegocio(data.unidadNegocio())
+                .favorito(false)
                 .build();
         Producto productoGuardado = productoRepository.save(producto);
         ajustarStock(TipoMovimientoInventario.CREACION, data.stock(), productoGuardado, productoGuardado.getId());
         return conversorDTO(producto);
+    }
+
+    @Override
+    public ProductoResponsiveDTO crearServicio(ProductoServicioRequestDTO data) {
+        if (!data.tipoProducto().equals(TipoProducto.SERVICIO)) {
+            throw new BusinessException("No se puede crear un servicio como producto fisico");
+        }
+        validarProductoNoExiste(data.nombre());
+        Producto producto = Producto.builder()
+                .nombre(data.nombre())
+                .codigoDeBarras(null)
+                .precio(data.precio())
+                .categoria(null)
+                .ubicacion(null)
+                .tipoProducto(data.tipoProducto())
+                .unidadNegocio(UnidadNegocio.PAPELERIA)
+                .favorito(null)
+                .build();
+        Producto productoGuardado = productoRepository.save(producto);
+        return conversorDTO(productoGuardado);
     }
 
     @Override
@@ -189,4 +216,5 @@ public class ProductoServiceImpl implements ProductoService {
         }
         return codigoDeBarras;
     }
+
 }

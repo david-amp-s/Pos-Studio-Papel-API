@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.dialect.type.PostgreSQLEnumJdbcType;
 
+import com.posstudio.papel.common.enums.TipoProducto;
 import com.posstudio.papel.common.enums.UnidadNegocio;
 
 import jakarta.persistence.Column;
@@ -44,7 +45,10 @@ public class Producto {
     private String codigoDeBarras;
     @Column(nullable = false)
     private BigDecimal precio;
-
+    @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(name = "tipo_producto", nullable = false)
+    private TipoProducto tipoProducto;
     private Integer stock;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
@@ -58,6 +62,7 @@ public class Producto {
     @Column(name = "unidad_negocio", nullable = false)
     private UnidadNegocio unidadNegocio;
 
+    private Boolean favorito;
     @Builder.Default
     private Boolean activo = true;
     @Column(updatable = false, nullable = false)
