@@ -6,6 +6,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.posstudio.papel.common.enums.Roles;
+import com.posstudio.papel.inventario.model.Categoria;
+import com.posstudio.papel.inventario.model.Ubicacion;
+import com.posstudio.papel.inventario.repository.CategoriaRepository;
+import com.posstudio.papel.inventario.repository.UbicacionRepository;
 import com.posstudio.papel.security.model.Usuario;
 import com.posstudio.papel.security.repository.UsuarioRepository;
 
@@ -30,6 +34,32 @@ public class Datainitializer {
                 usuarioRepository.save(user);
 
                 System.out.println("✅ Usuario admin creado");
+            }
+        };
+    }
+
+    @Bean
+    public CommandLineRunner createUbicacionServicio(UbicacionRepository ubicacionRepository) {
+        return args -> {
+            if (ubicacionRepository.findByCodigo("SERVICIO").isEmpty()) {
+                Ubicacion ubicacion = Ubicacion.builder()
+                        .codigo("SERVICIO")
+                        .build();
+                ubicacionRepository.save(ubicacion);
+                System.out.println("Ubicacion servicio creada");
+            }
+        };
+    }
+
+    @Bean
+    public CommandLineRunner createCategoriaServicio(CategoriaRepository categoriaRepository) {
+        return args -> {
+            if (categoriaRepository.findByNombre("SERVICIO").isEmpty()) {
+                Categoria categoria = Categoria.builder()
+                        .nombre("SERVICIO")
+                        .build();
+                categoriaRepository.save(categoria);
+                System.out.println("Categoria servicio Creada");
             }
         };
     }

@@ -69,11 +69,13 @@ public class ProductoServiceImpl implements ProductoService {
                 .build();
         Producto productoGuardado = productoRepository.save(producto);
         ajustarStock(TipoMovimientoInventario.CREACION, data.stock(), productoGuardado, productoGuardado.getId());
-        return conversorDTO(producto);
+        return conversorDTO(productoGuardado);
     }
 
     @Override
     public ProductoResponsiveDTO crearServicio(ProductoServicioRequestDTO data) {
+        Categoria categoria = categoriaService.findByNombre("SERVICIO");
+        Ubicacion ubicacion = ubicacionService.findByCodigo("SERVICIO");
         if (!data.tipoProducto().equals(TipoProducto.SERVICIO)) {
             throw new BusinessException("No se puede crear un servicio como producto fisico");
         }
@@ -82,13 +84,15 @@ public class ProductoServiceImpl implements ProductoService {
                 .nombre(data.nombre())
                 .codigoDeBarras(null)
                 .precio(data.precio())
-                .categoria(null)
-                .ubicacion(null)
+                .stock(0)
+                .categoria(categoria)
+                .ubicacion(ubicacion)
                 .tipoProducto(data.tipoProducto())
                 .unidadNegocio(UnidadNegocio.PAPELERIA)
-                .favorito(null)
+                .favorito(false)
                 .build();
         Producto productoGuardado = productoRepository.save(producto);
+        ajustarStock(TipoMovimientoInventario.CREACION, 0, productoGuardado, productoGuardado.getId());
         return conversorDTO(productoGuardado);
     }
 
@@ -141,7 +145,9 @@ public class ProductoServiceImpl implements ProductoService {
                                 "Creacion del producto"));
                 return conversorDTO(producto);
             case COMPRA:
-
+                if (producto.getTipoProducto().equals(TipoProducto.SERVICIO)) {
+                    throw new BusinessException("No se puede registrar compra de un servicio");
+                }
                 if (cantidad < 0) {
                     throw new BusinessException("La cantidad de productos no puede ser negativa");
                 }
@@ -155,6 +161,12 @@ public class ProductoServiceImpl implements ProductoService {
                 return conversorDTO(producto);
 
             case VENTA:
+                if (producto.getTipoProducto().equals(TipoProducto.SERVICIO)) {
+                    movimientoInventario
+                            .guardar(new MovimientoInventarioRequestDTO(producto, tipoMovimiento, cantidad, referencia,
+                                    "Venta del servicio"));
+                    return conversorDTO(producto);
+                }
                 if (producto.getStock() < cantidad) {
                     System.out.println("DEBE DE AJUSTARSE INVENTARIO");
                     producto.setStock(0);
@@ -173,12 +185,18 @@ public class ProductoServiceImpl implements ProductoService {
                 return conversorDTO(producto);
 
             case DEVOLUCION:
+                if (producto.getTipoProducto().equals(TipoProducto.SERVICIO)) {
+                    throw new BusinessException("No se puede hacer la devolucion de un servicio");
+                }
                 producto.setStock(cantidad + producto.getStock());
                 productoRepository.save(producto);
                 movimientoInventario.guardar(new MovimientoInventarioRequestDTO(producto, tipoMovimiento, cantidad,
                         referencia, "Hubo una devolucion del producto"));
                 return conversorDTO(producto);
             case AJUSTE:
+                if (producto.getTipoProducto().equals(TipoProducto.SERVICIO)) {
+                    throw new BusinessException("No se puede ajustar el stock de un servicio");
+                }
                 producto.setStock(cantidad);
                 productoRepository.save(producto);
                 movimientoInventario.guardar(new MovimientoInventarioRequestDTO(producto, tipoMovimiento, cantidad,

@@ -12,6 +12,7 @@ import com.posstudio.papel.common.responsive.ApiResponse;
 import com.posstudio.papel.common.responsive.PageResponseDTO;
 import com.posstudio.papel.inventario.dto.filter.ProductoFiltroDTO;
 import com.posstudio.papel.inventario.dto.request.ProductoRequestDTO;
+import com.posstudio.papel.inventario.dto.request.ProductoServicioRequestDTO;
 import com.posstudio.papel.inventario.dto.responsive.ProductoResponsiveDTO;
 import com.posstudio.papel.inventario.service.ProductoService;
 
@@ -31,10 +32,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class ProductoController {
     private final ProductoService productoService;
 
-    @PostMapping
+    @PostMapping()
     public ResponseEntity<ApiResponse<ProductoResponsiveDTO>> crearProducto(
             @Valid @RequestBody ProductoRequestDTO data) {
         return ResponseEntity.ok(ApiResponse.ok(productoService.crearProducto(data)));
+    }
+
+    @PostMapping("servicio")
+    public ResponseEntity<ApiResponse<ProductoResponsiveDTO>> crearServicio(
+            @Valid @RequestBody ProductoServicioRequestDTO data) {
+        return ResponseEntity.ok(ApiResponse.ok(productoService.crearServicio(data)));
     }
 
     @GetMapping
