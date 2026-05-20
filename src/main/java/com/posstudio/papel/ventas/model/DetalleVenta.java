@@ -3,6 +3,7 @@ package com.posstudio.papel.ventas.model;
 import java.math.BigDecimal;
 
 import com.posstudio.papel.inventario.model.Producto;
+import com.posstudio.papel.inventario.model.ProductoPendiente;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,8 +37,12 @@ public class DetalleVenta {
     Venta venta;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "producto_id", nullable = false)
+    @JoinColumn(name = "producto_id")
     Producto producto;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "producto_pendiente_id")
+    ProductoPendiente productoPendiente;
 
     @Column(nullable = false)
     Integer cantidad;

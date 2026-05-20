@@ -10,6 +10,8 @@ import com.posstudio.papel.common.enums.EstadoVenta;
 import com.posstudio.papel.common.exception.BusinessException;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.inventario.model.Producto;
+import com.posstudio.papel.inventario.model.ProductoPendiente;
+import com.posstudio.papel.inventario.service.ProductoPendienteService;
 import com.posstudio.papel.inventario.service.ProductoService;
 import com.posstudio.papel.ventas.dto.request.DetalleVentaRequestDTO;
 import com.posstudio.papel.ventas.dto.request.EditarDetalleVentaRequestDTO;
@@ -29,35 +31,71 @@ public class DetalleVentaServiceImpl implements DetalleVentaService {
     private final DetalleVentaRepository detalleVentaRepository;
     private final ProductoService productoService;
     private final VentaRepository ventaRepository;
+    private final ProductoPendienteService productoPendienteService;
 
     private DetalleVentaResponsiveDTO conversorDTO(DetalleVenta data) {
-        return new DetalleVentaResponsiveDTO(data.getId(), data.getProducto().getId(), data.getProducto().getNombre(),
+        return new DetalleVentaResponsiveDTO(
+                data.getId(),
+                data.getProducto() != null ? data.getProducto().getId() : null,
+                data.getProducto() != null ? data.getProducto().getNombre() : null,
+                data.getProductoPendiente() != null ? data.getProductoPendiente().getId() : null,
+                data.getProductoPendiente() != null ? data.getProductoPendiente().getNombre() : null,
                 data.getCantidad(),
-                data.getPrecioUnitario(), data.getSubtotal(), data.getDescuento());
+                data.getPrecioUnitario(),
+                data.getSubtotal(),
+                data.getDescuento());
     }
 
     @Override
     public DetalleVentaResponsiveDTO crearDetalleVenta(DetalleVentaRequestDTO data, Long ventaId) {
+        validarDto(data);
         Venta venta = validarVenta(ventaId);
-        Producto producto = productoService.findByid(data.productoId());
-        DetalleVenta verificarProducto = detalleVentaRepository.findByProductoAndVenta(producto, venta).orElse(null);
-        if (verificarProducto != null) {
-            verificarProducto.setCantidad(verificarProducto.getCantidad() + 1);
-            detalleVentaRepository.save(verificarProducto);
+        if (data.productoId() != null) {
+            Producto producto = productoService.findByid(data.productoId());
+            DetalleVenta verificarProducto = detalleVentaRepository.findByProductoAndVenta(producto, venta)
+                    .orElse(null);
+            if (verificarProducto != null) {
+                verificarProducto.setCantidad(verificarProducto.getCantidad() + 1);
+                detalleVentaRepository.save(verificarProducto);
+                recalcularTotalVenta(venta);
+                return conversorDTO(verificarProducto);
+            }
+
+            DetalleVenta detalleVenta = DetalleVenta.builder()
+                    .venta(venta)
+                    .producto(producto)
+                    .productoPendiente(null)
+                    .cantidad(data.cantidad())
+                    .precioUnitario(producto.getPrecio())
+                    .descuento(BigDecimal.ZERO)
+                    .build();
+            detalleVentaRepository.save(detalleVenta);
             recalcularTotalVenta(venta);
-            return conversorDTO(verificarProducto);
+            return conversorDTO(detalleVenta);
+        } else {
+            ProductoPendiente productoPendiente = productoPendienteService.findById(data.productoPendienteId());
+            DetalleVenta verificarProducto = detalleVentaRepository
+                    .findByProductoPendienteAndVenta(productoPendiente, venta)
+                    .orElse(null);
+            if (verificarProducto != null) {
+                verificarProducto.setCantidad(verificarProducto.getCantidad() + 1);
+                detalleVentaRepository.save(verificarProducto);
+                recalcularTotalVenta(venta);
+                return conversorDTO(verificarProducto);
+            }
+            DetalleVenta detalleVenta = DetalleVenta.builder()
+                    .venta(venta)
+                    .producto(null)
+                    .productoPendiente(productoPendiente)
+                    .cantidad(data.cantidad())
+                    .precioUnitario(productoPendiente.getPrecio())
+                    .descuento(BigDecimal.ZERO)
+                    .build();
+            detalleVentaRepository.save(detalleVenta);
+            recalcularTotalVenta(venta);
+            return conversorDTO(detalleVenta);
         }
 
-        DetalleVenta detalleVenta = DetalleVenta.builder()
-                .venta(venta)
-                .producto(producto)
-                .cantidad(data.cantidad())
-                .precioUnitario(producto.getPrecio())
-                .descuento(BigDecimal.ZERO)
-                .build();
-        detalleVentaRepository.save(detalleVenta);
-        recalcularTotalVenta(venta);
-        return conversorDTO(detalleVenta);
     }
 
     @Override
@@ -148,5 +186,16 @@ public class DetalleVentaServiceImpl implements DetalleVentaService {
         Venta venta = ventaRepository.findById(ventaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada", ventaId.toString()));
         return detalleVentaRepository.findByVenta(venta).stream().map(this::conversorDTO).toList();
+    }
+
+    private void validarDto(DetalleVentaRequestDTO data) {
+        if (data.productoId() != null && data.productoPendienteId() != null) {
+            throw new BusinessException(
+                    "No se puede realizar operaciones con Un producto y producto pendiente al mismo tiempo ");
+        }
+        if (data.productoId() == null && data.productoPendienteId() == null) {
+            throw new BusinessException(
+                    "Los campos de producto o producto pendiente no pueden ir vacios ");
+        }
     }
 }

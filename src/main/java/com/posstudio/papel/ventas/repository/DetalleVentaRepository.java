@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import com.posstudio.papel.inventario.model.Producto;
+import com.posstudio.papel.inventario.model.ProductoPendiente;
+
 import java.util.List;
 
 public interface DetalleVentaRepository extends JpaRepository<DetalleVenta, Long> {
@@ -23,6 +25,9 @@ public interface DetalleVentaRepository extends JpaRepository<DetalleVenta, Long
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<DetalleVenta> findByProductoAndVenta(Producto producto, Venta venta);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<DetalleVenta> findByProductoPendienteAndVenta(ProductoPendiente producto, Venta venta);
 
     @Query("SELECT COALESCE(SUM(d.subtotal), 0) FROM DetalleVenta d WHERE d.venta.id = :ventaId")
     BigDecimal sumSubtotalByVentaId(@Param("ventaId") Long ventaId);

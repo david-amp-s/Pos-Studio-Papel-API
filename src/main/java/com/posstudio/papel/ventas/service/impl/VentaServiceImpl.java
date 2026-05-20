@@ -43,14 +43,25 @@ public class VentaServiceImpl implements VentaService {
                                 ? data.getDetalles().stream()
                                                 .map(detalle -> new DetalleVentaResponsiveDTO(
                                                                 detalle.getId(),
-                                                                detalle.getProducto().getId(),
-                                                                detalle.getProducto().getNombre(),
+                                                                detalle.getProducto() != null
+                                                                                ? detalle.getProducto().getId()
+                                                                                : null,
+                                                                detalle.getProducto() != null
+                                                                                ? detalle.getProducto().getNombre()
+                                                                                : null,
+                                                                detalle.getProductoPendiente() != null
+                                                                                ? detalle.getProductoPendiente().getId()
+                                                                                : null,
+                                                                detalle.getProductoPendiente() != null
+                                                                                ? detalle.getProductoPendiente()
+                                                                                                .getNombre()
+                                                                                : null,
                                                                 detalle.getCantidad(),
                                                                 detalle.getPrecioUnitario(),
                                                                 detalle.getSubtotal(),
                                                                 detalle.getDescuento()))
                                                 .toList()
-                                : List.of(); // Lista vacía si no hay detalles
+                                : List.of();
 
                 // Convertir los pagos
                 List<PagoVentaResponsiveDTO> pagosDTO = data.getPagos() != null
