@@ -2,6 +2,8 @@ package com.posstudio.papel.ventas.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,4 +57,12 @@ public class VentaController {
         return ResponseEntity.ok(ApiResponse.ok(ventaService.cerrarVenta(ventaId, data)));
     }
 
+    @GetMapping("/{id}/ticket/pdf")
+    public ResponseEntity<byte[]> descargarTicket(@PathVariable Long id) {
+        byte[] pdf = ventaService.generarTicketPDF(id);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ticket-" + id + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
 }

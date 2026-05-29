@@ -17,4 +17,5 @@ public interface VentaService {
 
     VentaResponsiveDTO cerrarVenta(Long ventaId, PagoVentaRequestDTO pago);
 
+    byte[] generarTicketPDF(Long ventaId);
 }
