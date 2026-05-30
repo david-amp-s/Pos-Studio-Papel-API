@@ -206,6 +206,10 @@ public class VentaServiceImpl implements VentaService {
                         // ── Encabezado ───────────────────────────────────────
                         agregarParrafo(doc, "Studio Papel", fontTitulo, Element.ALIGN_CENTER);
                         agregarParrafo(doc, "Miscelánea", fontSub, Element.ALIGN_CENTER);
+                        agregarParrafo(doc, "Nit : 51852963", fontSub, Element.ALIGN_CENTER);
+                        agregarParrafo(doc, "3166676721", fontSub, Element.ALIGN_CENTER);
+                        agregarParrafo(doc, "carrera 97B #153-72", fontSub, Element.ALIGN_CENTER);
+
                         agregarParrafo(doc, "¡Gracias por tu compra!", fontBold, Element.ALIGN_CENTER);
                         doc.add(Chunk.NEWLINE);
 
