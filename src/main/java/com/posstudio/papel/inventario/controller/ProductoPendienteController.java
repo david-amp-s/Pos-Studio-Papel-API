@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.posstudio.papel.common.responsive.ApiResponse;
 import com.posstudio.papel.inventario.dto.request.ProductoPendienteRequestDTO;
 import com.posstudio.papel.inventario.dto.request.ProductoRequestDTO;
+import com.posstudio.papel.inventario.dto.request.ProductoServicioRequestDTO;
 import com.posstudio.papel.inventario.dto.responsive.ProductoPendienteResponsiveDTO;
 import com.posstudio.papel.inventario.service.ProductoPendienteService;
 
@@ -35,10 +36,18 @@ public class ProductoPendienteController {
         return ResponseEntity.ok(ApiResponse.ok(productoPendienteService.crearProductoPendiente(data)));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/producto/{id}")
     public ResponseEntity<Void> ajustarProductoPendiente(@PathVariable Long id,
             @Valid @RequestBody ProductoRequestDTO data) {
         productoPendienteService.ajustarProductoPendiente(id, data);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/servicio/{id}")
+    public ResponseEntity<Void> ajustarProductoServicioPendiente(@PathVariable Long id,
+            @Valid @RequestBody ProductoServicioRequestDTO data) {
+        productoPendienteService.ajustarProductoServicioPendiente(id, data);
 
         return ResponseEntity.noContent().build();
     }

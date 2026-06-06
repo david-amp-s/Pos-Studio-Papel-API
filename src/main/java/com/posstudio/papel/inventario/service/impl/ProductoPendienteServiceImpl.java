@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.posstudio.papel.common.exception.ResourceNotFoundException;
 import com.posstudio.papel.inventario.dto.request.ProductoPendienteRequestDTO;
 import com.posstudio.papel.inventario.dto.request.ProductoRequestDTO;
+import com.posstudio.papel.inventario.dto.request.ProductoServicioRequestDTO;
 import com.posstudio.papel.inventario.dto.responsive.ProductoPendienteResponsiveDTO;
 import com.posstudio.papel.inventario.model.ProductoPendiente;
 import com.posstudio.papel.inventario.repository.ProductoPendienteRepository;
@@ -62,6 +63,13 @@ public class ProductoPendienteServiceImpl implements ProductoPendienteService {
     @Override
     public Long totalProductosPendientes() {
         return productoPendienteRepository.count();
+    }
+
+    @Override
+    public void ajustarProductoServicioPendiente(Long id, ProductoServicioRequestDTO data) {
+        ProductoPendiente productoPendiente = findById(id);
+        productoService.crearServicio(data);
+        productoPendienteRepository.delete(productoPendiente);
     }
 
 }
