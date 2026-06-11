@@ -62,10 +62,27 @@ public class ProductoController {
         return ResponseEntity.ok(ApiResponse.ok(productoService.editarProducto(id, data)));
     }
 
+    @PutMapping("favoritoadd/{id}")
+    public ResponseEntity<Void> añadirFavorito(@PathVariable Long id) {
+        productoService.añadirFavorito(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("favoritodel/{id}")
+    public ResponseEntity<Void> eliminarFavorito(@PathVariable Long id) {
+        productoService.eliminarFavorito(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> desactivarProducto(@PathVariable Long id) {
         productoService.desactivarProducto(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/favoritos")
+    public ResponseEntity<ApiResponse<List<ProductoResponsiveDTO>>> listarProductosFavoritos() {
+        return ResponseEntity.ok(ApiResponse.ok(productoService.listarProductosFavoritos()));
     }
 
 }

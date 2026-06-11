@@ -1,5 +1,7 @@
 package com.posstudio.papel.inventario.service.impl;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -211,6 +213,7 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     public void desactivarProducto(Long id) {
         Producto producto = findByid(id);
+        eliminarFavorito(id);
         producto.setActivo(false);
         productoRepository.save(producto);
     }
@@ -233,6 +236,28 @@ public class ProductoServiceImpl implements ProductoService {
             return null;
         }
         return codigoDeBarras;
+    }
+
+    @Override
+    public List<ProductoResponsiveDTO> listarProductosFavoritos() {
+        return productoRepository.findByFavorito(true).stream().map(this::conversorDTO).toList();
+    }
+
+    @Override
+    public void añadirFavorito(Long id) {
+        Producto producto = findByid(id);
+        if (!producto.getActivo().equals(true)) {
+            throw new BusinessException("No se puede añadir a favoritos un producto desactivado");
+        }
+        producto.setFavorito(true);
+        productoRepository.save(producto);
+    }
+
+    @Override
+    public void eliminarFavorito(Long id) {
+        Producto producto = findByid(id);
+        producto.setFavorito(false);
+        productoRepository.save(producto);
     }
 
 }

@@ -1,5 +1,7 @@
 package com.posstudio.papel.inventario.service;
 
+import java.util.List;
+
 import com.posstudio.papel.common.enums.TipoMovimientoInventario;
 import com.posstudio.papel.common.responsive.PageResponseDTO;
 import com.posstudio.papel.inventario.dto.filter.ProductoFiltroDTO;
@@ -16,6 +18,12 @@ public interface ProductoService {
     ProductoResponsiveDTO crearServicio(ProductoServicioRequestDTO data);
 
     PageResponseDTO<ProductoResponsiveDTO> listarProducto(ProductoFiltroDTO filtro, int pagina, int tamanio);
+
+    List<ProductoResponsiveDTO> listarProductosFavoritos();
+
+    void añadirFavorito(Long id);
+
+    void eliminarFavorito(Long id);
 
     ProductoResponsiveDTO editarProducto(Long id, ProductoRequestDTO data);
 

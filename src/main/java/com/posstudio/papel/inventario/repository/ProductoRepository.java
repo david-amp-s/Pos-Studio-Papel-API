@@ -12,4 +12,6 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
     Optional<Producto> findByNombre(String nombre);
 
     List<Producto> findByActivo(Boolean activo);
+
+    List<Producto> findByFavorito(Boolean favorito);
 }
